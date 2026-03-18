@@ -4,6 +4,7 @@ from ursina import *
 from ursina.shaders import lit_with_shadows_shader
 from corridor import *
 from config import *
+from inventory import *
 
 """
 
@@ -143,4 +144,19 @@ def update():
 if __name__ == '__main__':
 	print('\nControls: A/D or left/right arrows = left/right wall. W/S or up/down arrows = ceiling/floor.')
 	print('The bean does not translate; corridor segments move to simulate running.\n')
+	inventory=Inventory()
+	
+	def add_item():
+		inventory.append(random.choice(['bag', 'car']))
+	
+	for i in range(7):
+		inventory.append('test item')
+	add_item_button = Button(
+		scale = (.1,.1),
+		x=-.5,
+		color=color.lime.tint(-.25),
+		text='+',
+		tooltip=Tooltip('Add random item'),
+		on_click=add_item
+	)
 	app.run()
