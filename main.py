@@ -1,5 +1,6 @@
 from ursina import *
 from ursina.shaders import lit_with_shadows_shader
+from inventory import *
 
 """
 URSINA: 4-sided corridor base
@@ -67,73 +68,6 @@ sides = sides_A + sides_B + sides_C + sides_D
 bean = Entity(model='sphere', scale=(0.7,1.0,0.9), color=color.orange, position=(0,-1,-10), shader=lit_with_shadows_shader)
 # make bean look slightly stretched to be "bean-like"
 bean.model = 'sphere'
-
-# ----------------
-# Inventory
-# ----------------
-class Inventory(Entity):
-	def __init__(self):
-		super().__init__(
-			parent = camera.ui,
-			model = 'quad',
-			scale = (.5, .8),
-			origin = (-.5, .5),
-			position = (-.3,.4),
-			texture = 'white_cube',
-			texture_scale = (5,8),
-			color = color.dark_gray
-			)
-		self.item_parent = Entity(parent=self, scale=(1/5,1/8))
-
-	def append(self, item):
-		icon=Draggable(
-			parent = inventory.item_parent,
-			model = 'quad',
-			texture= item,
-			origin = (-.5,.5),
-			color = color.white,
-			position = self.find_free_spot(),
-			z = -.1
-			)
-		
-		def drag():
-			icon.org_pos=(icon.x, icon.y)
-			icon.z += .1
-
-		def drop():
-			icon.x = int(round(icon.x))
-			icon.y = int(round(icon.y))
-			icon.z = -.1
-
-			if icon.x<0 or icon.x>=5 or icon.y>0 or icon.y<-7:
-				print("out of bounds")
-				icon.position=(icon.org_pos)
-				icon.z= -.1
-				return
-
-			for c in self.item_parent.children:
-				if c == icon:
-					continue
-				if c.x==icon.x and c.y==icon.y:
-					print('swap positions')
-					c.position = icon.org_pos
-					c.z = -0.1
-
-
-		icon.drag=drag
-		icon.drop=drop
-		name=item.replace('_', '').title()
-		icon.tooltip=Tooltip(name)
-		icon.tooltip.background.color=color.hsv(0,0,0,.8)
-		
-	def find_free_spot(self):
-		taken_spots = [(int(e.x), int(e.y)) for e in self.item_parent.children]
-		for y in range(8):
-			for x in range(5):
-				if not (x, -y) in taken_spots:
-					return(x, -y)
-
-
 
 # Static camera behind the bean and looking toward origin (center of corridor)
 camera.position = Vec3(0, 0, 0)
