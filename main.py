@@ -1,33 +1,162 @@
 from ursina import *
+from ursina.shaders import lit_with_shadows_shader
+
+"""
+URSINA: 4-sided corridor base
+- Bean character (third-person view, stationary at origin)
+- Four walls per modular segment: floor, ceiling, left, right
+- Walls (segments) move towards the bean to simulate running; the bean does not translate
+- Static camera behind the bean looking toward corridor center
+
+Controls:
+- A / D : attach bean to left / right wall (visual only)
+- W / S : attach bean to ceiling / floor (visual only)
+- Esc  : quit
+
+Adjustable parameters at the top of the file: SEG_COUNT, SEG_LENGTH, SPEED, WIDTH, HEIGHT
+"""
+
+# -----------------
+# Config
+# -----------------
+SEG_COUNT	= 10
+SEG_LENGTH	= 20
+SPEED		= 10.0    # how fast segments move toward the bean
+TURN_TIME	= 0.2     # how long it takes to rotate segments when switching attachment
+WIDTH		= 4.0    # corridor width (x)
+HEIGHT		= 1.0    # corridor height (y)
+CURVE		= curve.linear  # easing curve for segment rotation
+ROTATING	= False  # whether segments are currently rotating (to prevent input during rotation)
 
 app = Ursina()
+window.title = '4-sided corridor - Ursina base'
+window.borderless = False
 
-# --- 2D style camera ---
-camera.orthographic = True
-camera.fov = 10
-window.color = color.black
+# simple ambient light + directional
+LIGHT = DirectionalLight(y=2, z=3, shadows=True)
+AmbientLight(color=color.rgba(40,40,40,100))
 
-# --- Player ---
-player = Entity(
-    model='quad',
-    color=color.azure,
-    scale=(1,1),
-    collider='box'
-)
+# -----------------
+# Corridor segment
+# -----------------
+SIDES_Z_0 = -SEG_LENGTH/2
+ORIGIN = Vec3(0, 2, 0)
 
-speed = 5
+class CorridorSegment(Entity):
+	def __init__(self, z_pos, rotation, color=color.gray):
+		super().__init__()
+		self.z = SIDES_Z_0 + z_pos
+		self.model = 'cube'
+		self.texture = 'brick'
+		self.color = color
+		self.shader = lit_with_shadows_shader
+		self.scale = (WIDTH, HEIGHT, SEG_LENGTH)
+		self.origin = ORIGIN
+		self.rotation = rotation
 
-# --- Ground / reference ---
-ground = Entity(
-    model='quad',
-    scale=(20,10),
-    color=color.dark_gray,
-    z=1
-)
+sides_A = [CorridorSegment(z_pos = -i * SEG_LENGTH, rotation=Vec3(0, 0, 0)) for i in range(SEG_COUNT)]
+sides_B = [CorridorSegment(z_pos = -i * SEG_LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(SEG_COUNT)]
+sides_C = [CorridorSegment(z_pos = -i * SEG_LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(SEG_COUNT)]
+sides_D = [CorridorSegment(z_pos = -i * SEG_LENGTH, rotation=Vec3(0, 0, 180), color=color.orange) for i in range(SEG_COUNT)]
 
-# --- Game loop ---
+sides = sides_A + sides_B + sides_C + sides_D
+
+# -----------------
+# Player (bean)
+# -----------------
+bean = Entity(model='sphere', scale=(0.7,1.0,0.9), color=color.orange, position=(0,-1,-10), shader=lit_with_shadows_shader)
+# make bean look slightly stretched to be "bean-like"
+bean.model = 'sphere'
+
+# ----------------
+# Inventory
+# ----------------
+class Inventory(Entity):
+	def __init__(self):
+		super().__init__(
+			parent = camera.ui,
+			model = 'quad',
+			scale = (.5, .8),
+			origin = (-.5, .5),
+			position = (-.3,.4),
+			texture = 'white_cube',
+			texture_scale = (5,8),
+			color = color.dark_gray
+			)
+		self.item_parent = Entity(parent=self, scale=(1/5,1/8))
+
+	def append(self, item):
+		Button(
+			parent = inventory.item_parent,
+			model = 'quad',
+			origin = (-.5,.5),
+			color = color.random_color(),
+			z = -.1
+			)
+
+# Static camera behind the bean and looking toward origin (center of corridor)
+camera.position = Vec3(0, 0, 0)
+camera.look_at(Vec3(0, 0, -1))
+
+def get_last_z(sides_list):
+	"""Helper to find the farthest-back z (most negative) among all sides."""
+	return min(side.z for side in sides_list)
+
+def rotate_sides(sides_list, direction):
+	"""Rotate sides in the specified direction (clockwise or counterclockwise)."""
+	if direction == 'clockwise':
+		direction = Vec3(0, 0, -90)
+	elif direction == 'counterclockwise':
+		direction = Vec3(0, 0, 90)
+	for side in sides_list:
+		side.animate_rotation(side.rotation + direction, duration=0.2, curve=curve.linear)
+
+# -----------------
+# Input & update
+# -----------------
+
+def input(key):
+	"""Keyboard controls for switching attachment (visual only)."""
+	global ROTATING
+	print(ROTATING)
+	if key == 'a' or key == 'left arrow' and not ROTATING:
+		ROTATING = True
+		for side in sides:
+			side.animate_rotation(side.rotation + Vec3(0, 0, 90), duration=TURN_TIME, curve=CURVE)
+	if key == 'd' or key == 'right arrow' and not ROTATING:
+		ROTATING = True
+		for side in sides:
+			side.animate_rotation(side.rotation - Vec3(0, 0, 90), duration=TURN_TIME, curve=CURVE)
+	if key == 'w' or key == 'up arrow':
+		pass
+		# apply_surface(2)  # ceiling
+	if key == 's' or key == 'down arrow':
+		pass
+		# apply_surface(0)  # floor
+	if key == 'escape':
+		application.quit()
+
+TEXT = Text('', origin=(0, -0.45), scale=1.5)
+
 def update():
-    player.x += (held_keys['d'] - held_keys['a']) * speed * time.dt
-    player.y += (held_keys['w'] - held_keys['s']) * speed * time.dt
+	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
+	global SPEED, SEG_LENGTH, SIDES_Z_0, LIGHT
 
-app.run()
+	LIGHT.position = Vec3(1, math.sin(time.time()*2), 3)
+	# TEXT.text = str(LIGHT.position)
+
+	for element in [sides_A, sides_B, sides_C, sides_D]:
+		for side in element:
+			side.z += SPEED * time.dt
+			if side.z > SIDES_Z_0 + SEG_LENGTH:
+				side.z = get_last_z(element) - SEG_LENGTH
+
+
+# -----------------
+# Start
+# -----------------
+
+if __name__ == '__main__':
+	print('\nControls: A/D or left/right arrows = left/right wall. W/S or up/down arrows = ceiling/floor.')
+	print('The bean does not translate; corridor segments move to simulate running.\n')
+	app.run()
