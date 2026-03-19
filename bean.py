@@ -75,6 +75,8 @@ class Character(Entity):
 
 		player_graphics.play_animation('run')
 		ALIVE = True
+		player_graphics.play_animation('run')
+		self.on_death_callback=None
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
 		global JUMPING
@@ -95,8 +97,12 @@ class Character(Entity):
 		hit = self.intersects()
 		if hit.hit and hit.entity and getattr(hit.entity, 'is_obstacle', False):
 			print("dead 3")
-			self.enabled = False
 			for shadow in self.shadows:
 				shadow.enabled = False
+			
+			if self.on_death_callback is not None:
+				self.on_death_callback()
+				
+			self.enabled = False
 
   

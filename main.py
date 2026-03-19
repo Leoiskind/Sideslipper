@@ -106,6 +106,63 @@ def get_last_z(sides_list):
 	"""Helper to find the farthest-back z (most negative) among all sides."""
 	return min(side.z for side in sides_list)
 
+# --- GAME STATE & SCORE VARIABLES ---
+GAME_OVER = False
+SCORE = 0
+
+def trigger_death():
+	global GAME_OVER, SPEED
+	if GAME_OVER: return # Prevent dying twice!
+
+	print("Player died!")
+	GAME_OVER = True
+	SPEED = 0  # Stop the walls from moving
+	
+	# Update and show the death screen
+	final_score_ui.text = f'Final Score: {int(SCORE)}'
+	death_screen.enabled = True
+
+bean.on_death_callback = trigger_death
+
+def restart_game():
+	global GAME_OVER, SCORE, SPEED
+	
+	print("Restarting game...")
+	GAME_OVER = False
+	SCORE = 0
+	SPEED = 0  # Reset to your base starting speed
+	
+	# Reset Player Stats
+	player.coins = 0
+	coin_counter_ui.text = 'Coins: 0'
+	score_ui.text = 'Score: 0'
+	player.enabled = True
+	player.position= Vec3(0, 0, -10)
+	
+	# Reset the corridor rotation back to the floor
+	rotation_pivot.rotation_z = 0
+	
+	# Hide the death screen so the player can see again
+	for entity in scene.entities:
+		if getattr(entity, 'is_obstacle', False) or isinstance(entity, Coin):
+			destroy(entity)
+
+	player.enabled = True
+	death_screen.enabled = False
+	
+
+def toggle_pause():
+	# Don't allow pausing if the player is already dead!
+	if GAME_OVER: 
+		return 
+
+	# Flip the built-in Ursina pause state
+	application.paused = not application.paused
+	
+	# Turn the visual pause screen on or off to match
+	pause_screen.enabled = application.paused
+
+
 # -----------------
 # Input & update
 # -----------------
@@ -114,6 +171,15 @@ def input(key):
 	"""Keyboard controls for switching attachment (visual only)."""
 	print(key)
 	global ROTATING, JUMPING
+	if key=='p':
+		toggle_pause()
+
+	if key=='k':
+		trigger_death()
+	
+	if rotation_pivot.rotation_z %90 == 0:
+		ROTATING=False
+
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		ROTATING = False
 	if bean.y == 0:
@@ -153,10 +219,16 @@ TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 def update():
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
-	global SPEED, LENGTH, SIDES_Z_0, SCROLL_SPEED, JUMPING
+	global SPEED, LENGTH, SIDES_Z_0, SCROLL_SPEED, JUMPING, SCORE
 	
 	# LIGHT.look_at(bean)
 	# TEXT.text = str(LIGHT.position)
+
+	if GAME_OVER:
+		return
+	
+	SCORE += time.dt * 10
+	score_ui.text = f'Score: {int(SCORE)}'
 
 	for element in [sides_A, sides_B, sides_C, sides_D]:
 		for side in element:
@@ -262,15 +334,6 @@ if __name__ == '__main__':
 	}
 	item_shop = Shop(player=player, inventory=inventory, coin_counter_ui=coin_counter_ui, catalog=catalog)
 
-	# Add a little button to the screen to open the shop
-	open_shop_btn = Button(
-		scale=(0.15, 0.05),
-		position=(-0.75, 0.35),
-		color=color.azure,
-		text='Open Shop',
-		on_click=item_shop.show_shop
-	)
-
 	#------
 	# Manages effects
 	#------
@@ -288,5 +351,32 @@ if __name__ == '__main__':
 
 	# 3. Tell the inventory to use the manager's logic when items are eaten!
 	inventory.use_item_callback = effect_manager.apply_item_effects
+
+	# --- 1. SCORE UI ---
+	score_ui = Text(text='Score: 0', position=(-0.85, 0.38), scale=2, color=color.white)
+
+	# --- 2. DEATH SCREEN UI ---
+	death_screen = Entity(parent=camera.ui, enabled=False, z=1)
+	Entity(parent=death_screen, model='quad', scale=(2, 2), color=color.rgba(0, 0, 0, 200))
+	Text(parent=death_screen, text='YOU DIED', origin=(0, 0), position=(0, 0.2), scale=4, color=color.red, z=-1)
+	final_score_ui = Text(parent=death_screen, text='Score: 0', origin=(0, 0), position=(0, 0), scale=2, color=color.white, z=-1)
+	Button(parent=death_screen, text='RESTART', scale=(0.3, 0.1), position=(0, -0.2), color=color.azure, on_click=Func(lambda: restart_game()))
+
+	# --- 3. PAUSE SCREEN UI ---
+	pause_screen = Entity(parent=camera.ui, enabled=False, z=-1)
+	Entity(parent=pause_screen, model='quad', scale=(2, 2), color=color.rgba(0, 0, 0, 180))
+	Text(parent=pause_screen, text='PAUSED', origin=(0, 0), position=(0, 0), scale=5, color=color.white)
+	Text(parent=pause_screen, text='Press P to Resume', origin=(0, 0), position=(0, -0.15), scale=1.5, color=color.gray)
+
+	# --- 4. OPEN SHOP BUTTON ---
+	# Uses Sequence to simultaneously open the shop AND pause the game!
+	open_shop_btn = Button(
+		scale=(0.15, 0.05),
+		position=(-0.75, 0.3),
+		color=color.azure,
+		text='Open Shop',
+		on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
+	)
+
 
 	app.run()

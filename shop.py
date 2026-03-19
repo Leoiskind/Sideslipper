@@ -22,10 +22,10 @@ class Shop(Entity):
 
     def setup_ui(self):
         # 1. Shop Title
-        Text(parent=self, text='ITEM SHOP', position=(0, 0.4), origin=(0, 0), scale=2)
+        Text(parent=self, text='ITEM SHOP', position=(0, 0.4, -.2), origin=(0, 0), scale=2, color=color.black)
         
         # 2. Close Button
-        Button(parent=self, text='X', scale=(0.05, 0.08), position=(0.45, 0.4), color=color.red, on_click=self.hide_shop)
+        Button(parent=self, text='X', scale=(0.05, 0.08), position=(0.45, 0.4, -.1), color=color.red, on_click=self.hide_shop)
 
         # 3. Create the items automatically
         x_spacing = -0.3
@@ -37,15 +37,15 @@ class Shop(Entity):
                 model='quad',
                 texture=item_name,
                 scale=(0.15, 0.25),
-                position=(x_spacing, 0),
+                position=(x_spacing, 0, -.1),
                 color=color.white,
-                tooltip=Tooltip(f"Buy {item_name.title()}")
+                tooltip=Tooltip(f"Buy {item_name.title()}", z=-.2)
             )
             # We use Ursina's 'Func' to pass the specific item and cost to our buy function
             btn.on_click = Func(self.buy_item, item_name, cost)
             
             # Create the price label under the item
-            Text(parent=self, text=f'{cost} Coins', position=(x_spacing, -0.18), origin=(0, 0), scale=1.5, color=color.gold)
+            Text(parent=self, text=f'{cost} Coins', position=(x_spacing, -0.18, -.2), origin=(0, 0), scale=1.5, color=color.gold)
             
             x_spacing += 0.3 # Move the next item to the right
 
@@ -67,3 +67,4 @@ class Shop(Entity):
 
     def hide_shop(self):
         self.enabled = False
+        application.paused=False
