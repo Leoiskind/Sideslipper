@@ -1,7 +1,8 @@
-from ursina import Entity, Vec3, color
+from ursina import Entity, Vec3, color, time, destroy
 from ursina.shaders import lit_with_shadows_shader
-from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, JUMPING
+from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, JUMPING, GRAPHICS_SCALE
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
+from obstacles import Obstacle
 
 class Character(Entity):
 	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy'):
@@ -68,11 +69,12 @@ class Character(Entity):
 		unlit=True,
 		double_sided=True,
 		rotation=(0, 180, 0),
-		scale=(3, 3),
+		scale=(GRAPHICS_SCALE, GRAPHICS_SCALE),
 		parent=self,
 		y=-2.2)
 
 		player_graphics.play_animation('run')
+		ALIVE = True
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
 		global JUMPING
@@ -88,5 +90,13 @@ class Character(Entity):
 			delay=TURN_TIME/2,
 			curve=CURVE_JUMP_DOWN
 		)
+
+	def update(self):
+		hit = self.intersects()
+		if hit.hit and hit.entity and getattr(hit.entity, 'is_obstacle', False):
+			print("dead 3")
+			self.enabled = False
+			for shadow in self.shadows:
+				shadow.enabled = False
 
   

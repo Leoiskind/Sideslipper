@@ -1,5 +1,5 @@
 from ursina import *
-from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SCROLL_SPEED
+from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SCROLL_SPEED, COIN_TIMER, COIN_SPAWN_DISTANCE, COIN_POSITIONS, COIN_RARITY
 
 class Coin(Entity):
 	def __init__(self, position, player, coin_counter, parent):
@@ -21,7 +21,7 @@ class Coin(Entity):
 		self.rotation_x += 100 * time.dt
 		self.z += self.speed * time.dt
 		hit_info = self.intersects()
-		if hit_info.hit:
+		if hit_info.hit and hit_info.entity == self.player:
 			self.player.coins +=1
 			self.coin_counter.text = f'coins: {self.player.coins}'
 			print("dead 1")
@@ -31,3 +31,12 @@ class Coin(Entity):
 			print("dead 2")
 			destroy(self)
 			return
+		
+def coin_spawner(player, coin_counter_ui, parent):
+	global COIN_TIMER, COIN_SPAWN_DISTANCE, SCROLL_SPEED, LENGTH, COIN_RARITY
+	coin_time = COIN_SPAWN_DISTANCE / (SCROLL_SPEED * LENGTH)
+	COIN_TIMER += time.dt
+	if COIN_TIMER > coin_time:  # spawn a coin
+		COIN_TIMER -= coin_time
+		if random.random() < COIN_RARITY:
+			Coin(position=random.choice(COIN_POSITIONS), player=player, coin_counter=coin_counter_ui, parent=parent)
