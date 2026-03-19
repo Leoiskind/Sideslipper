@@ -1,6 +1,7 @@
 from ursina import *
 from ursina.shaders import lit_with_shadows_shader
 from inventory import *
+from coin import *
 
 """
 URSINA: 4-sided corridor base
@@ -149,4 +150,29 @@ if __name__ == '__main__':
 		tooltip=Tooltip('Add random item'),
 		on_click=add_item
 	)
+	hide_inventory_button = Button(
+		scale = (.1,.1),
+		x=.5,
+		color=color.red.tint(-.25),
+		text='-',
+		tooltip=Tooltip('hide inventory'),
+		on_click=inventory.hide_inventory
+	)
+	show__inventory_button = Button(
+		scale = (.1,.1),
+		x=.5,
+		y=.15,
+		color=color.green.tint(-.25),
+		text='+',
+		tooltip=Tooltip('show inventory'),
+		on_click=inventory.show_inventory
+	)
+	player = bean
+	player.coins = 0
+    
+    # 2. Create the physical UI Text element on the screen
+	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
+	Coin(position=(0, 0, -30), player=player, coin_counter=coin_counter_ui)
+	Coin(position=(0, 0, -40), player=player, coin_counter=coin_counter_ui)
+	Coin(position=(0, 0, -50), player=player, coin_counter=coin_counter_ui)
 	app.run()
