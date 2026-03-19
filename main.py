@@ -6,6 +6,7 @@ from inventory import *
 from coin import *
 from bean import *
 from obstacles import *
+from shop import *
 
 """
 
@@ -51,7 +52,7 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	bean_color=color.orange, origin=ORIGIN
+	color=color.clear, origin=ORIGIN
 	)
 
 # -----------------
@@ -179,12 +180,12 @@ if __name__ == '__main__':
 	print('The bean does not translate; corridor segments move to simulate running.\n')
 	inventory=Inventory()
 	inventory.hide_inventory()
-	
+
 	def add_item():
-		inventory.append(random.choice(['bag', 'car']))
-	
+		inventory.append(random.choice(['nachos', 'fries', 'hash_brown', 'rice']))
+
 	for i in range(7):
-		inventory.append('test item')
+		inventory.append('nachos')
 	add_item_button = Button(
 		scale = (.1,.1),
 		x=-.5,
@@ -212,11 +213,28 @@ if __name__ == '__main__':
 	)
 	player = bean
 	player.coins = 0
-    
-    # 2. Create the physical UI Text element on the screen
+
+	# 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
 	Coin(position=(0, -1.25, -30), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
 	Coin(position=(1.25, 0, -40), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
 	Coin(position=(0, 1.25, -50), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-	app.run()
 
+	# --- ADD THIS: Initialize the Shop ---
+	# Pass the player, the inventory, and the UI text so the shop can edit them!
+	catalog={
+		'nachos': 2,
+		'rice'  : 5,
+		'hash_brown': 10
+	}
+	item_shop = Shop(player=player, inventory=inventory, coin_counter_ui=coin_counter_ui, catalog=catalog)
+
+	# Add a little button to the screen to open the shop
+	open_shop_btn = Button(
+		scale=(0.15, 0.05),
+		position=(-0.75, 0.35),
+		color=color.azure,
+		text='Open Shop',
+		on_click=item_shop.show_shop
+	)
+	app.run()
