@@ -25,6 +25,7 @@ class Inventory(Entity):
 			z = -.1,
 			unlit=True
 			)
+		icon.item_name=item
 		
 		def drag():
 			icon.org_pos=(icon.x, icon.y)
@@ -51,7 +52,6 @@ class Inventory(Entity):
 					c.position = icon.org_pos
 					c.z = -0.1
 
-
 		icon.drag=drag
 		icon.drop=drop
 		name=item.replace('_', '').title()
@@ -59,10 +59,10 @@ class Inventory(Entity):
 		icon.tooltip.background.color=color.hsv(0,0,0,.8)
 	
 	def hide_inventory(self):
-		self.z = 10000
+		self.enabled = False
 	
 	def show_inventory(self):
-		self.z = 0
+		self.enabled = True
 		
 	def find_free_spot(self):
 		taken_spots = [(int(e.x), int(e.y)) for e in self.item_parent.children]
