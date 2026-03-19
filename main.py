@@ -1,5 +1,3 @@
-from turtle import speed
-
 from ursina import *
 from ursina.shaders import lit_with_shadows_shader
 from corridor import *
@@ -7,6 +5,7 @@ from config import *
 from inventory import *
 from coin import *
 from bean import *
+from obstacles import *
 from shop import *
 
 """
@@ -21,26 +20,24 @@ window.borderless = False
 window.vsync = False
 
 # simple ambient light + directional
-LIGHT = DirectionalLight(x = 0, y=0.0, z=-10, shadows=True)
-LIGHT.look_at(Vec3(0, -1, -11))
-shadow_box = Entity(model='wireframe_cube', scale=20, visible=True)
-LIGHT.update_bounds(shadow_box)  # update light's shadow bounds to encompass the whole scene
+# LIGHT = DirectionalLight(x = 0, y=0.0, z=-10, shadows=True)
+# LIGHT.look_at(Vec3(0, -1, -11))
+# shadow_box = Entity(model='wireframe_cube', scale=20, visible=True)
+# LIGHT.update_bounds(shadow_box)  # update light's shadow bounds to encompass the whole scene
 # LIGHT.update_bounds(scene)
-# AmbientLight(color=color.rgba(40,40,40,100))
+AmbientLight(color=color.rgba(1,1,1,100))
 
 # LIGHT_BALL = Entity(parent=LIGHT, model='sphere', scale=0.2, color=color.yellow, unlit_entity=True)
 
 # -----------------
 # Rotation things
 # -----------------
-
 vertical_root = Entity()
 rotation_pivot = Entity(parent=vertical_root)
 
 # -----------------
 # Corridor segments
 # -----------------
-
 sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.gray) for i in range(SEG_COUNT)]
 sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(SEG_COUNT)]
 sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(SEG_COUNT)]
@@ -55,74 +52,27 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	color=color.clear, origin=ORIGIN
+	bean_color=color.clear, origin=ORIGIN
 	)
 
-bean_shadow_A = Entity(
-	parent=rotation_pivot,
-	model='quad',
-	scale=(BEAN_HEIGHT, BEAN_HEIGHT),
-	position=Vec3(0, -CORRIDOR_HEIGHT/2+0.0001, -10),
-	rotation=Vec3(90, 0, 0),
-	color=color.black,
-	double_sided=True,
-	texture='circle',
-	unlit_entity=True,
-)
+# -----------------
+# Obstacles
+# -----------------
+Test_Obstacle = Obstacle(position=(0, -1, -30), scale=(1,1,0.5), parent=rotation_pivot)
 
-bean_shadow_B = Entity(
-	parent=rotation_pivot,
-	model='quad',
-	scale=(BEAN_HEIGHT, BEAN_HEIGHT),
-	position=Vec3(-CORRIDOR_HEIGHT/2+0.0001, 0, -10),
-	rotation=Vec3(0, 90, 0),
-	color=color.black,
-	double_sided=True,
-	texture='circle',
-	unlit_entity=True,
-	enabled=False
-)
-
-bean_shadow_C = Entity(
-	parent=rotation_pivot,
-	model='quad',
-	scale=(BEAN_HEIGHT, BEAN_HEIGHT),
-	position=Vec3(CORRIDOR_HEIGHT/2-0.0001, 0, -10),
-	rotation=Vec3(0, 90, 0),
-	color=color.black,
-	double_sided=True,
-	texture='circle',
-	unlit_entity=True,
-	enabled=False
-)
-
-bean_shadow_D = Entity(
-	parent=rotation_pivot,
-	model='quad',
-	scale=(BEAN_HEIGHT, BEAN_HEIGHT),
-	position=Vec3(0, CORRIDOR_HEIGHT/2-0.0001, -10),
-	rotation=Vec3(90, 0, 0),
-	color=color.black,
-	double_sided=True,
-	texture='circle',
-	unlit_entity=True,
-	enabled=False
-)
-
-# bean_shadow_B.parent = rotation_pivot
-
-# thing = Entity(model='quad', color=color.black, double_sided=True)
-
-# bean.parent = rotation_pivot
-# camera.parent = rotation_pivot
+# -----------------
+# Rotation hierarchy
+# -----------------
+for shadow in bean.shadows:
+	shadow.parent = rotation_pivot
 
 for side in sides:
 	side.parent = rotation_pivot
 
 # Static camera behind the bean and looking toward origin (center of corridor)
 camera.origin = ORIGIN
-camera.position = Vec3(0, 0, 0)
-camera.look_at(Vec3(0, 0, -1))
+camera.position = Vec3(.7, 0, 0)
+camera.rotation = Vec3(7, 190, 0)
 camera.fov = FOV
 
 def get_last_z(sides_list):
@@ -136,37 +86,22 @@ def get_last_z(sides_list):
 def input(key):
 	"""Keyboard controls for switching attachment (visual only)."""
 	print(key)
-	global ROTATING
-	if rotation_pivot.rotation_z % 90 == 0:
+	global ROTATING, JUMPING
+	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		ROTATING = False
-	if held_keys['a'] and not ROTATING:
+	if bean.y == 0:
+		JUMPING = False
+	if held_keys['d'] and not ROTATING and not JUMPING:
 		ROTATING = True
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
-		bean.animate_position(
-			bean.position + Vec3(0, BEAN_HEIGHT*2, 0),
-			duration=TURN_TIME/2,
-			curve=CURVE_JUMP_UP
-		)
-		bean.animate_position(
-			bean.position,
-			duration=TURN_TIME/2,
-			delay=TURN_TIME/2,
-			curve=CURVE_JUMP_DOWN
-		)
-	if held_keys['d'] and not ROTATING:
+		bean.jump()
+	if held_keys['a'] and not ROTATING and not JUMPING:
 		ROTATING = True
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
-		bean.animate_position(
-			bean.position + Vec3(0, BEAN_HEIGHT*2, 0),
-			duration=TURN_TIME/2,
-			curve=CURVE_JUMP_UP
-		)
-		bean.animate_position(
-			bean.position,
-			duration=TURN_TIME/2,
-			delay=TURN_TIME/2,
-			curve=CURVE_JUMP_DOWN
-		)
+		bean.jump()
+	if held_keys['space'] and not ROTATING and not JUMPING:
+		JUMPING = True
+		bean.jump()
 		
 	if key == 'w' or key == 'up arrow':
 		pass
@@ -203,14 +138,37 @@ def update():
 			if side.z > SIDES_Z_0 + LENGTH:
 				side.z = get_last_z(element) - LENGTH
 	
-	cos_theta = math.cos(math.radians(rotation_pivot.rotation_z))
-	if abs(cos_theta) > 0.01:   # avoid division by zero / extreme angles
-		floor_y = - (CORRIDOR_HEIGHT/2) / cos_theta + 0.0001   # small bias to avoid z-fighting
-		bean_shadow_A.world_position = Vec3(bean.world_x, floor_y, bean.world_z)
-		bean_shadow_A.enabled = True
+	# Determine which side is currently "down"
+	angle = rotation_pivot.rotation_z % 360
+	# print(JUMPING, bean.y)
+
+	if 300 <= angle or angle <= 60:
+		bean.shadows[0].enabled = True
 	else:
-		# Floor is vertical – shadow cannot stay at same X,Z; disable or move onto wall
-		bean_shadow_A.enabled = False
+		bean.shadows[0].enabled = False
+	if 30 <= angle and angle <= 150:
+		bean.shadows[1].enabled = True
+	else:		
+		bean.shadows[1].enabled = False
+	if 120 <= angle and angle <= 240:
+		bean.shadows[3].enabled = True
+	else:
+		bean.shadows[3].enabled = False
+	if 210 <= angle and angle <= 330:
+		bean.shadows[2].enabled = True
+	else:
+		bean.shadows[2].enabled = False
+
+	angle_A = abs((angle - 0) % 360)
+	angle_B = abs((angle - 90) % 360)
+	angle_C = abs((angle - 270) % 360)
+	angle_D = abs((angle - 180) % 360)
+
+	angles = [angle_A, angle_B, angle_C, angle_D]
+
+	for i, shadow in enumerate(bean.shadows):
+		L = CORRIDOR_HEIGHT/(2*math.cos(math.radians(angles[i]))) + 0.0001
+		shadow.world_position = Vec3(bean.world_x, -L+.01, bean.world_z)
 
 
 # -----------------
