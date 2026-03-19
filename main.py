@@ -58,7 +58,16 @@ bean = Character(
 # -----------------
 # Obstacles
 # -----------------
-Test_Obstacle = Obstacle(position=(0, -1, -30), scale=(1,1,0.5), parent=rotation_pivot)
+Test_Lower = LowObstacle(z=-30, parent=rotation_pivot)
+Test_Higher = HighObstacle(z=-40, parent=rotation_pivot)
+Test_Wall = WallObstacle(z=-50, parent=rotation_pivot)
+Middle_obstacle = MiddleObstacle(z=-60, parent=rotation_pivot)
+# obs_scale = .75
+# Test_Obstacle = Obstacle(
+# 	position=(0, (obs_scale-CORRIDOR_HEIGHT)/2, -30),
+# 	scale=(CORRIDOR_HEIGHT,obs_scale,0.5),
+# 	parent=rotation_pivot
+# 	)
 
 # -----------------
 # Rotation hierarchy
@@ -69,7 +78,24 @@ for shadow in bean.shadows:
 for side in sides:
 	side.parent = rotation_pivot
 
+with open('fisheye.vert', 'r') as f:
+    vertex_src = f.read()
+
+with open('fisheye.frag', 'r') as f:
+    fragment_src = f.read()
+
 # Static camera behind the bean and looking toward origin (center of corridor)
+fisheye_shader = Shader(
+    name='fisheye',
+    language=Shader.GLSL,
+    vertex=vertex_src,
+    fragment=fragment_src
+)
+
+# fisheye_shader.set_shader_input('strength', 1.0)  # full effect
+camera.shader = fisheye_shader
+camera.set_shader_input('strength', 0.1)
+# camera.shader = None
 camera.origin = ORIGIN
 camera.position = Vec3(.7, 0, 0)
 camera.rotation = Vec3(7, 190, 0)
@@ -126,8 +152,8 @@ TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 def update():
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
-	global SPEED, LENGTH, SIDES_Z_0, LIGHT
-
+	global SPEED, LENGTH, SIDES_Z_0, SCROLL_SPEED, JUMPING
+	
 	# LIGHT.look_at(bean)
 	# TEXT.text = str(LIGHT.position)
 
@@ -138,37 +164,43 @@ def update():
 			if side.z > SIDES_Z_0 + LENGTH:
 				side.z = get_last_z(element) - LENGTH
 	
-	# Determine which side is currently "down"
-	angle = rotation_pivot.rotation_z % 360
-	# print(JUMPING, bean.y)
+	coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
-	if 300 <= angle or angle <= 60:
-		bean.shadows[0].enabled = True
+	if bean.enabled:
+		# Determine which side is currently "down"
+		angle = rotation_pivot.rotation_z % 360
+		# print(JUMPING, bean.y)
+
+		if 300 <= angle or angle <= 60:
+			bean.shadows[0].enabled = True
+		else:
+			bean.shadows[0].enabled = False
+		if 30 <= angle and angle <= 150:
+			bean.shadows[1].enabled = True
+		else:		
+			bean.shadows[1].enabled = False
+		if 120 <= angle and angle <= 240:
+			bean.shadows[3].enabled = True
+		else:
+			bean.shadows[3].enabled = False
+		if 210 <= angle and angle <= 330:
+			bean.shadows[2].enabled = True
+		else:
+			bean.shadows[2].enabled = False
+
+		angle_A = abs((angle - 0) % 360)
+		angle_B = abs((angle - 90) % 360)
+		angle_C = abs((angle - 270) % 360)
+		angle_D = abs((angle - 180) % 360)
+
+		angles = [angle_A, angle_B, angle_C, angle_D]
+
+		for i, shadow in enumerate(bean.shadows):
+			L = CORRIDOR_HEIGHT/(2*math.cos(math.radians(angles[i]))) + 0.0001
+			shadow.world_position = Vec3(bean.world_x, -L+.01, bean.world_z)
 	else:
-		bean.shadows[0].enabled = False
-	if 30 <= angle and angle <= 150:
-		bean.shadows[1].enabled = True
-	else:		
-		bean.shadows[1].enabled = False
-	if 120 <= angle and angle <= 240:
-		bean.shadows[3].enabled = True
-	else:
-		bean.shadows[3].enabled = False
-	if 210 <= angle and angle <= 330:
-		bean.shadows[2].enabled = True
-	else:
-		bean.shadows[2].enabled = False
-
-	angle_A = abs((angle - 0) % 360)
-	angle_B = abs((angle - 90) % 360)
-	angle_C = abs((angle - 270) % 360)
-	angle_D = abs((angle - 180) % 360)
-
-	angles = [angle_A, angle_B, angle_C, angle_D]
-
-	for i, shadow in enumerate(bean.shadows):
-		L = CORRIDOR_HEIGHT/(2*math.cos(math.radians(angles[i]))) + 0.0001
-		shadow.world_position = Vec3(bean.world_x, -L+.01, bean.world_z)
+		for shadow in bean.shadows:
+			shadow.enabled = False
 
 
 # -----------------
