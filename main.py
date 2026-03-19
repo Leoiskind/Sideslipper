@@ -109,6 +109,22 @@ bean_shadow_D = Entity(
 	enabled=False
 )
 
+# Local offsets (center of each side at z = -10) and inward normals
+offsets = [
+    Vec3(0, -CORRIDOR_HEIGHT/2, -10),   # sides_A (floor)
+    Vec3(-CORRIDOR_HEIGHT/2, 0, -10),   # sides_B (left wall)
+    Vec3(CORRIDOR_HEIGHT/2, 0, -10),    # sides_C (right wall)
+    Vec3(0, CORRIDOR_HEIGHT/2, -10)     # sides_D (ceiling)
+]
+normals_local = [
+    Vec3(0, 1, 0),   # floor: inward up
+    Vec3(1, 0, 0),   # left wall: inward right
+    Vec3(-1, 0, 0),  # right wall: inward left
+    Vec3(0, -1, 0)   # ceiling: inward down
+]
+
+shadows = [bean_shadow_A, bean_shadow_B, bean_shadow_C, bean_shadow_D]
+
 # bean_shadow_B.parent = rotation_pivot
 
 # thing = Entity(model='quad', color=color.black, double_sided=True)
@@ -203,14 +219,46 @@ def update():
 			if side.z > SIDES_Z_0 + LENGTH:
 				side.z = get_last_z(element) - LENGTH
 	
-	cos_theta = math.cos(math.radians(rotation_pivot.rotation_z))
-	if abs(cos_theta) > 0.01:   # avoid division by zero / extreme angles
-		floor_y = - (CORRIDOR_HEIGHT/2) / cos_theta + 0.0001   # small bias to avoid z-fighting
-		bean_shadow_A.world_position = Vec3(bean.world_x, floor_y, bean.world_z)
-		bean_shadow_A.enabled = True
+	# Determine which side is currently "down"
+	angle = rotation_pivot.rotation_z % 360
+
+	# Determine which side is the floor based on rotation angle
+	if angle == 0:
+		quarter = 0          # sides_A
+	elif angle == 90:
+		quarter = 1          # sides_B
+	elif angle == 270:         # -90 mod 360
+		quarter = 2          # sides_C
+	elif angle == 180:
+		quarter = 3          # sides_D
 	else:
-		# Floor is vertical – shadow cannot stay at same X,Z; disable or move onto wall
-		bean_shadow_A.enabled = False
+		quarter = 0          # fallback
+
+	# Local bean position relative to corridor frame
+	# Since the corridor rotates around Z, inverse-rotate the bean position into local space.
+	theta = math.radians(rotation_pivot.rotation_z)
+	c = math.cos(theta)
+	s = math.sin(theta)
+
+	bx = bean.x * c + bean.y * s
+	by = -bean.x * s + bean.y * c
+	bz = bean.z
+
+	eps = 0.0001
+
+	print()
+	for i, shadow in enumerate(shadows):
+		shadow.enabled = (i == quarter)
+
+		if i == quarter:
+			if quarter == 0:      # floor
+				shadow.position = Vec3(bx, -CORRIDOR_HEIGHT/2 + eps, bz)
+			elif quarter == 1:    # left wall
+				shadow.position = Vec3(-CORRIDOR_HEIGHT/2 + eps, by, bz)
+			elif quarter == 2:    # right wall
+				shadow.position = Vec3(CORRIDOR_HEIGHT/2 - eps, by, bz)
+			elif quarter == 3:    # ceiling
+				shadow.position = Vec3(bx, CORRIDOR_HEIGHT/2 - eps, bz)
 
 
 # -----------------
@@ -225,33 +273,33 @@ if __name__ == '__main__':
 	# def add_item():
 	# 	inventory.append(random.choice(['bag', 'car']))
 	
-	for i in range(7):
-		inventory.append('test item')
-	add_item_button = Button(
-		scale = (.1,.1),
-		x=-.5,
-		color=color.lime.tint(-.25),
-		text='+',
-		tooltip=Tooltip('Add random item'),
-		on_click=add_item
-	)
-	hide_inventory_button = Button(
-		scale = (.1,.1),
-		x=.5,
-		color=color.red.tint(-.25),
-		text='-',
-		tooltip=Tooltip('hide inventory'),
-		on_click=inventory.hide_inventory
-	)
-	show__inventory_button = Button(
-		scale = (.1,.1),
-		x=.5,
-		y=.15,
-		color=color.green.tint(-.25),
-		text='+',
-		tooltip=Tooltip('show inventory'),
-		on_click=inventory.show_inventory
-	)
+	# for i in range(7):
+	# 	inventory.append('test item')
+	# add_item_button = Button(
+	# 	scale = (.1,.1),
+	# 	x=-.5,
+	# 	color=color.lime.tint(-.25),
+	# 	text='+',
+	# 	tooltip=Tooltip('Add random item'),
+	# 	on_click=add_item
+	# )
+	# hide_inventory_button = Button(
+	# 	scale = (.1,.1),
+	# 	x=.5,
+	# 	color=color.red.tint(-.25),
+	# 	text='-',
+	# 	tooltip=Tooltip('hide inventory'),
+	# 	on_click=inventory.hide_inventory
+	# )
+	# show__inventory_button = Button(
+	# 	scale = (.1,.1),
+	# 	x=.5,
+	# 	y=.15,
+	# 	color=color.green.tint(-.25),
+	# 	text='+',
+	# 	tooltip=Tooltip('show inventory'),
+	# 	on_click=inventory.show_inventory
+	# )
 	player = bean
 	player.coins = 0
     
