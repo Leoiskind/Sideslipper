@@ -7,6 +7,7 @@ from coin import *
 from bean import *
 from obstacles import *
 from shop import *
+from effects import EffectsManager
 
 """
 
@@ -237,4 +238,23 @@ if __name__ == '__main__':
 		text='Open Shop',
 		on_click=item_shop.show_shop
 	)
+
+	#------
+	# Manages effects
+	#------
+	# 1. Create a "Remote Control" function so the EffectsManager can safely edit SPEED
+	def update_game_speed(amount):
+		global SPEED
+		SPEED += amount
+
+	# 2. Start up the new Effects Manager and hand it the player, the UI, and the remote control
+	effect_manager = EffectsManager(
+		player=player, 
+		coin_counter_ui=coin_counter_ui, 
+		speed_callback=update_game_speed
+	)
+
+	# 3. Tell the inventory to use the manager's logic when items are eaten!
+	inventory.use_item_callback = effect_manager.apply_item_effects
+
 	app.run()
