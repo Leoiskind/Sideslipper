@@ -15,7 +15,7 @@ class Coin(Entity):
 
 		self.player=player
 		self.coin_counter = coin_counter
-		self.speed=SCROLL_SPEED%1
+		self.speed=SCROLL_SPEED * LENGTH
 	
 	def update(self):
 		self.rotation_x += 100 * time.dt
