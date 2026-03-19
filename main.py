@@ -52,7 +52,7 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	color=color.clear, origin=ORIGIN
+	bean_color=color.clear, origin=ORIGIN
 	)
 
 # -----------------

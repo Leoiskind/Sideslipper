@@ -4,7 +4,7 @@ from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 
 class Character(Entity):
-	def __init__(self, model, scale, position, color, origin, texture='running_guy'):
+	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy'):
 		super().__init__()
 		self.model = model
 		self.scale = scale
@@ -62,17 +62,17 @@ class Character(Entity):
 			enabled=False
 		)
 		self.shadows = [self.shadow_A, self.shadow_B, self.shadow_C, self.shadow_D]
-    player_graphics = SpriteSheetAnimation('running_guy', tileset_size=(2,2), fps=6, animations={
-    'run': ((0, 1), (1, 1))
-    },
-    unlit=True,
-    double_sided=True,
-    rotation=(0, 180, 0),
-    scale=(3, 3),
-    parent=self,
-    y=-2.2)
+		player_graphics = SpriteSheetAnimation('running_guy', tileset_size=(2,2), fps=6, animations={
+		'run': ((0, 1), (1, 1))
+		},
+		unlit=True,
+		double_sided=True,
+		rotation=(0, 180, 0),
+		scale=(3, 3),
+		parent=self,
+		y=-2.2)
 
-    player_graphics.play_animation('run')
+		player_graphics.play_animation('run')
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
 		global JUMPING
