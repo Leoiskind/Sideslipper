@@ -9,7 +9,8 @@ class Inventory(Entity):
 			position = (-.3,.4),
 			texture = 'white_cube',
 			texture_scale = (5,8),
-			color = color.dark_gray
+			color = color.dark_gray,
+			unlit=True
 			)
 		self.item_parent = Entity(parent=self, scale=(1/5,1/8))
 
@@ -21,17 +22,20 @@ class Inventory(Entity):
 			origin = (-.5,.5),
 			color = color.white,
 			position = self.find_free_spot(),
-			z = -.1
+			z = -.1,
+			unlit=True
 			)
 		
 		def drag():
 			icon.org_pos=(icon.x, icon.y)
-			icon.z += .1
+			icon.z = -.3
+			icon._always_on_top=True
 
 		def drop():
 			icon.x = int(round(icon.x))
 			icon.y = int(round(icon.y))
 			icon.z = -.1
+			icon.always_on_top=False
 
 			if icon.x<0 or icon.x>=5 or icon.y>0 or icon.y<-7:
 				print("out of bounds")
@@ -53,6 +57,12 @@ class Inventory(Entity):
 		name=item.replace('_', '').title()
 		icon.tooltip=Tooltip(name)
 		icon.tooltip.background.color=color.hsv(0,0,0,.8)
+	
+	def hide_inventory(self):
+		self.z = 10000
+	
+	def show_inventory(self):
+		self.z = 0
 		
 	def find_free_spot(self):
 		taken_spots = [(int(e.x), int(e.y)) for e in self.item_parent.children]
