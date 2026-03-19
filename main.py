@@ -51,7 +51,7 @@ sides = sides_A + sides_B + sides_C + sides_D
 # Player (bean)
 # -----------------
 bean = Character(
-	model='sphere',
+	model=None,
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
 	color=color.orange, origin=ORIGIN
@@ -223,10 +223,10 @@ if __name__ == '__main__':
 	inventory.hide_inventory()
 	
 	def add_item():
-		inventory.append(random.choice(['bag', 'car']))
+		inventory.append(random.choice(['nachos', 'fries', 'hash_brown', 'rice']))
 	
 	for i in range(7):
-		inventory.append('test item')
+		inventory.append('nachos')
 	add_item_button = Button(
 		scale = (.1,.1),
 		x=-.5,
