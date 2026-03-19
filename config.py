@@ -1,4 +1,5 @@
 from ursina import Vec3, curve
+import flags
 
 # -----------------
 # Corridor config
@@ -24,13 +25,14 @@ GRAPHICS_SCALE = 2  # scale for the player graphics (running animation)
 # Camera config
 # -----------------
 FOV = 60  # Field of view for the camera
+STORE		= False
 
 # -----------------
 # Main config
 # -----------------
 SEG_COUNT	= 10
 SPEED		= 0.0    # how fast segments move toward the bean
-SCROLL_SPEED= .1
+# SCROLL_SPEED= .1
 TURN_TIME	= 0.5     # how long it takes to rotate segments when switching attachment
 
 CURVE		= curve.in_quad  # easing curve for segment rotation
@@ -41,7 +43,7 @@ ROTATING	= False  # whether segments are currently rotating (to prevent input du
 # -----------------
 COIN_SPAWN_DISTANCE = 20  # how far apart coins are spawned (z)
 COIN_TIMER = 0
-COIN_TIME = COIN_SPAWN_DISTANCE / (SCROLL_SPEED * LENGTH)  # time between coin spawns based on scroll speed
+COIN_TIME = COIN_SPAWN_DISTANCE / (flags.SCROLL_SPEED * LENGTH)  # time between coin spawns based on scroll speed
 COIN_POSITIONS = (
 	(0, -1.25, -50),
 	(-1.25, 0, -50),

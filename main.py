@@ -8,6 +8,8 @@ from bean import *
 from obstacles import *
 from shop import *
 from effects import EffectsManager
+from camera import *
+import flags
 
 """
 
@@ -63,6 +65,7 @@ Test_Lower = LowObstacle(z=-30, parent=rotation_pivot)
 Test_Higher = HighObstacle(z=-40, parent=rotation_pivot)
 Test_Wall = WallObstacle(z=-50, parent=rotation_pivot)
 Middle_obstacle = MiddleObstacle(z=-60, parent=rotation_pivot)
+Test_Shop = StoreObstacle(z=-80, parent=rotation_pivot)
 # obs_scale = .75
 # Test_Obstacle = Obstacle(
 # 	position=(0, (obs_scale-CORRIDOR_HEIGHT)/2, -30),
@@ -78,20 +81,6 @@ for shadow in bean.shadows:
 
 for side in sides:
 	side.parent = rotation_pivot
-
-with open('fisheye.vert', 'r') as f:
-    vertex_src = f.read()
-
-with open('fisheye.frag', 'r') as f:
-    fragment_src = f.read()
-
-# Static camera behind the bean and looking toward origin (center of corridor)
-fisheye_shader = Shader(
-    name='fisheye',
-    language=Shader.GLSL,
-    vertex=vertex_src,
-    fragment=fragment_src
-)
 
 # fisheye_shader.set_shader_input('strength', 1.0)  # full effect
 camera.shader = fisheye_shader
@@ -169,6 +158,7 @@ def toggle_pause():
 
 def input(key):
 	"""Keyboard controls for switching attachment (visual only)."""
+	global camera_base_pos, camera_base_rot
 	print(key)
 	global ROTATING, JUMPING
 	if key=='p':
@@ -186,10 +176,12 @@ def input(key):
 		JUMPING = False
 	if held_keys['d'] and not ROTATING and not JUMPING:
 		ROTATING = True
+		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
 		bean.jump()
 	if held_keys['a'] and not ROTATING and not JUMPING:
 		ROTATING = True
+		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
 		bean.jump()
 	if held_keys['space'] and not ROTATING and not JUMPING:
@@ -206,24 +198,26 @@ def input(key):
 		application.quit()
 	
 	speed = 100 * time.dt
-	if held_keys['i']: camera.position += camera.forward*speed
-	if held_keys['k']: camera.position += camera.back*speed
-	if held_keys['j']: camera.position += camera.left*speed
-	if held_keys['l']: camera.position += camera.right*speed
-	if held_keys['u']: camera.rotation_y -= speed
-	if held_keys['o']: camera.rotation_y += speed
-	if held_keys['n']: camera.y -= speed
-	if held_keys['m']: camera.y += speed
+	if held_keys['i']: camera_base_pos += camera.forward*speed
+	if held_keys['k']: camera_base_pos += camera.back*speed
+	if held_keys['j']: camera_base_pos += camera.left*speed
+	if held_keys['l']: camera_base_pos += camera.right*speed
+	if held_keys['u']: camera_base_rot[1] -= speed
+	if held_keys['o']: camera_base_rot[1] += speed
+	if held_keys['n']: camera_base_pos[1] -= speed
+	if held_keys['m']: camera_base_pos[1] += speed
 
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 def update():
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
-	global SPEED, LENGTH, SIDES_Z_0, SCROLL_SPEED, JUMPING, SCORE
+	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE
+	SCROLL_SPEED = flags.SCROLL_SPEED
 	
 	# LIGHT.look_at(bean)
 	# TEXT.text = str(LIGHT.position)
 
+	update_camera_shake(camera)
 	if GAME_OVER:
 		return
 	
@@ -237,7 +231,8 @@ def update():
 			if side.z > SIDES_Z_0 + LENGTH:
 				side.z = get_last_z(element) - LENGTH
 	
-	coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
+	if flags.SCROLL_SPEED != 0:
+		coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
 	if bean.enabled:
 		# Determine which side is currently "down"
