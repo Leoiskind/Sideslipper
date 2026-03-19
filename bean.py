@@ -76,6 +76,9 @@ class Character(Entity):
 		y=-2.2)
 
 		player_graphics.play_animation('run')
+		ALIVE = True
+		player_graphics.play_animation('run')
+		self.on_death_callback=None
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
 		flags.JUMPING = True
@@ -97,6 +100,7 @@ class Character(Entity):
 			if getattr(hit.entity, 'is_obstacle', True):
 				print("Bean dead")
 				start_camera_shake(strength=0.2, duration=0.3)
+        self.on_death_callback()
 				self.enabled = False
 				for shadow in self.shadows:
 					shadow.enabled = False
