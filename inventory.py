@@ -13,7 +13,6 @@ class Inventory(Entity):
 			unlit=True
 			)
 		self.item_parent = Entity(parent=self, scale=(1/5,1/8))
-		self.z=1000
 
 	def append(self, item):
 		icon=Draggable(
@@ -60,10 +59,10 @@ class Inventory(Entity):
 		icon.tooltip.background.color=color.hsv(0,0,0,.8)
 	
 	def hide_inventory(self):
-		self.z = 10000
+		self.enabled = False
 	
 	def show_inventory(self):
-		self.z = 0
+		self.enabled = True
 		
 	def find_free_spot(self):
 		taken_spots = [(int(e.x), int(e.y)) for e in self.item_parent.children]
