@@ -3,7 +3,7 @@ from ursina import Vec3, curve
 # -----------------
 # Corridor config
 # -----------------
-WIDTH		= 4.0    # corridor width (x)
+WIDTH		= 3.0    # corridor width (x)
 HEIGHT		= 1.0    # corridor height (y
 LENGTH	= 100.0  # length of each corridor segment (z)
 CORRIDOR_HEIGHT = 3.0  # how high the corridor is (y)
@@ -15,6 +15,11 @@ ORIGIN_SIDES = Vec3(0, 0.5 + CORRIDOR_HEIGHT/2, 0)
 # -----------------
 BEAN_HEIGHT = 0.5	# Size of the character
 ORIGIN		= Vec3(0, 1.5/BEAN_HEIGHT - 0.5, 0)  # origin point for bean
+
+# -----------------
+# Camera config
+# -----------------
+FOV = 60  # Field of view for the camera
 
 # -----------------
 # Main config
