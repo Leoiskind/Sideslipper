@@ -268,38 +268,38 @@ def update():
 if __name__ == '__main__':
 	print('\nControls: A/D or left/right arrows = left/right wall. W/S or up/down arrows = ceiling/floor.')
 	print('The bean does not translate; corridor segments move to simulate running.\n')
-	# inventory=Inventory()
+	inventory=Inventory()
 	
-	# def add_item():
-	# 	inventory.append(random.choice(['bag', 'car']))
+	def add_item():
+		inventory.append(random.choice(['bag', 'car']))
 	
-	# for i in range(7):
-	# 	inventory.append('test item')
-	# add_item_button = Button(
-	# 	scale = (.1,.1),
-	# 	x=-.5,
-	# 	color=color.lime.tint(-.25),
-	# 	text='+',
-	# 	tooltip=Tooltip('Add random item'),
-	# 	on_click=add_item
-	# )
-	# hide_inventory_button = Button(
-	# 	scale = (.1,.1),
-	# 	x=.5,
-	# 	color=color.red.tint(-.25),
-	# 	text='-',
-	# 	tooltip=Tooltip('hide inventory'),
-	# 	on_click=inventory.hide_inventory
-	# )
-	# show__inventory_button = Button(
-	# 	scale = (.1,.1),
-	# 	x=.5,
-	# 	y=.15,
-	# 	color=color.green.tint(-.25),
-	# 	text='+',
-	# 	tooltip=Tooltip('show inventory'),
-	# 	on_click=inventory.show_inventory
-	# )
+	for i in range(7):
+		inventory.append('test item')
+	add_item_button = Button(
+		scale = (.1,.1),
+		x=-.5,
+		color=color.lime.tint(-.25),
+		text='+',
+		tooltip=Tooltip('Add random item'),
+		on_click=add_item
+	)
+	hide_inventory_button = Button(
+		scale = (.1,.1),
+		x=.5,
+		color=color.red.tint(-.25),
+		text='-',
+		tooltip=Tooltip('hide inventory'),
+		on_click=inventory.hide_inventory
+	)
+	show__inventory_button = Button(
+		scale = (.1,.1),
+		x=.5,
+		y=.15,
+		color=color.green.tint(-.25),
+		text='+',
+		tooltip=Tooltip('show inventory'),
+		on_click=inventory.show_inventory
+	)
 	player = bean
 	player.coins = 0
     
