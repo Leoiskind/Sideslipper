@@ -25,6 +25,7 @@ class Inventory(Entity):
 			z = -.1,
 			unlit=True
 			)
+		icon.item_name=item
 		
 		def drag():
 			icon.org_pos=(icon.x, icon.y)
@@ -50,7 +51,6 @@ class Inventory(Entity):
 					print('swap positions')
 					c.position = icon.org_pos
 					c.z = -0.1
-
 
 		icon.drag=drag
 		icon.drop=drop

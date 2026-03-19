@@ -1,5 +1,5 @@
 from ursina import *
-from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES
+from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SCROLL_SPEED
 
 class Coin(Entity):
 	def __init__(self, position, player, coin_counter, parent):
@@ -15,7 +15,7 @@ class Coin(Entity):
 
 		self.player=player
 		self.coin_counter = coin_counter
-		self.speed=5
+		self.speed=SCROLL_SPEED%1
 	
 	def update(self):
 		self.rotation_x += 100 * time.dt
