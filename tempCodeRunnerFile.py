@@ -1,2 +1,3 @@
 
-		# rotation_pivot.animate_y(0, duration=TURN_TIME/2, delay=TURN_TIME/2, curve=CURVE_JUMP)
+	# floor_y = -CORRIDOR_HEIGHT/2 + 0.0001
+	# bean_shadow.world_position = Vec3(bean.world_x, floor_y, bean.world_z)
