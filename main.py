@@ -51,10 +51,10 @@ sides = sides_A + sides_B + sides_C + sides_D
 # Player (bean)
 # -----------------
 bean = Character(
-	model=None,
+	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	color=color.orange, origin=ORIGIN
+	color=color.clear, origin=ORIGIN
 	)
 
 bean_shadow_A = Entity(
