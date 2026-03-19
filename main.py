@@ -6,6 +6,7 @@ from corridor import *
 from config import *
 from inventory import *
 from coin import *
+from bean import *
 
 """
 
@@ -49,13 +50,11 @@ sides = sides_A + sides_B + sides_C + sides_D
 # -----------------
 # Player (bean)
 # -----------------
-bean = Entity(
+bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	color=color.orange, origin=ORIGIN,
-	shader=lit_with_shadows_shader,
-	shadow=True
+	color=color.orange, origin=ORIGIN
 	)
 
 bean_shadow_A = Entity(
@@ -220,10 +219,10 @@ def update():
 if __name__ == '__main__':
 	print('\nControls: A/D or left/right arrows = left/right wall. W/S or up/down arrows = ceiling/floor.')
 	print('The bean does not translate; corridor segments move to simulate running.\n')
-	# inventory=Inventory()
+	inventory=Inventory()
 	
-	# def add_item():
-	# 	inventory.append(random.choice(['bag', 'car']))
+	def add_item():
+		inventory.append(random.choice(['bag', 'car']))
 	
 	for i in range(7):
 		inventory.append('test item')
@@ -257,7 +256,8 @@ if __name__ == '__main__':
     
     # 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
-	Coin(position=(0, 0, -30), player=player, coin_counter=coin_counter_ui)
-	Coin(position=(0, 0, -40), player=player, coin_counter=coin_counter_ui)
-	Coin(position=(0, 0, -50), player=player, coin_counter=coin_counter_ui)
+	Coin(position=(1.5, 0, -30), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
+	Coin(position=(0, 0, -40), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
+	Coin(position=(0, 0, -50), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
 	app.run()
+

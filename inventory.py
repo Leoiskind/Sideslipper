@@ -13,6 +13,7 @@ class Inventory(Entity):
 			unlit=True
 			)
 		self.item_parent = Entity(parent=self, scale=(1/5,1/8))
+		self.z=1000
 
 	def append(self, item):
 		icon=Draggable(
