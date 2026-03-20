@@ -32,7 +32,7 @@ STORE		= False
 # -----------------
 SEG_COUNT	= 10
 SPEED		= 0.0    # how fast segments move toward the bean
-# SCROLL_SPEED= .1
+DEFAULT_SCROLL_SPEED= .1
 TURN_TIME	= 0.5     # how long it takes to rotate segments when switching attachment
 
 CURVE		= curve.in_quad  # easing curve for segment rotation

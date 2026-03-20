@@ -9,6 +9,7 @@ from obstacles import *
 from shop import *
 from effects import EffectsManager
 from camera import *
+import camera as cam
 import flags
 
 """
@@ -31,6 +32,15 @@ window.vsync = False
 AmbientLight(color=color.rgba(1,1,1,100))
 
 # LIGHT_BALL = Entity(parent=LIGHT, model='sphere', scale=0.2, color=color.yellow, unlit_entity=True)
+
+def to_shop():
+	flags.STORE = True
+	cam.camera_base_pos = Vec3(-10, 10, 0)
+	cam.camera_base_rot = Vec3(0, 0, 0)
+	update_camera_shake(camera)
+	item_shop.enabled = True
+	item_shop.show_shop()
+	application.paused = True
 
 # -----------------
 # Rotation things
@@ -55,7 +65,8 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	bean_color=color.clear, origin=ORIGIN
+	bean_color=color.clear, origin=ORIGIN,
+	on_shop_callback=to_shop
 	)
 
 # -----------------
@@ -105,9 +116,12 @@ def trigger_death():
 
 	print("Player died!")
 	GAME_OVER = True
-	SPEED = 0  # Stop the walls from moving
+	flags.SCROLL_SPEED = 0  # Stop the walls from moving
 	
 	# Update and show the death screen
+	invoke(show_death_screen, delay=1.0)  # delay in seconds
+
+def show_death_screen():
 	final_score_ui.text = f'Final Score: {int(SCORE)}'
 	death_screen.enabled = True
 
@@ -151,6 +165,39 @@ def toggle_pause():
 	# Turn the visual pause screen on or off to match
 	pause_screen.enabled = application.paused
 
+# Define effects as functions that will be continously triggered.
+# Make a list with the effects for walls 0 through 3
+
+def effect_A():
+	flags.CAN_JUMP = False
+
+def clear_A():
+	flags.CAN_JUMP = True
+
+def effect_B():
+	print("increased speed")
+	global DEFAULT_SCROLL_SPEED
+	flags.SCROLL_SPEED = 5*DEFAULT_SCROLL_SPEED
+
+def clear_B():
+	print("reduced speed")
+	global DEFAULT_SCROLL_SPEED
+	flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
+
+def effects_C():
+	pass
+
+def clear_C():
+	pass
+
+def effects_D():
+	pass
+
+def clear_D():
+	pass
+
+effects = [effect_A, effect_B, effects_C, effects_D]
+clear_effects = [clear_A, clear_B, clear_C, clear_D]
 
 # -----------------
 # Input & update
@@ -160,6 +207,7 @@ def input(key):
 	"""Keyboard controls for switching attachment (visual only)."""
 	global camera_base_pos, camera_base_rot
 	print(key)
+	print(flags.CAN_JUMP)
 	global ROTATING, JUMPING
 	if key=='p':
 		toggle_pause()
@@ -168,25 +216,29 @@ def input(key):
 		trigger_death()
 	
 	if rotation_pivot.rotation_z %90 == 0:
-		ROTATING=False
+		flags.ROTATING=False
 
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
-		ROTATING = False
+		flags.ROTATING = False
 	if bean.y == 0:
-		JUMPING = False
-	if held_keys['d'] and not ROTATING and not JUMPING:
-		ROTATING = True
+		flags.JUMPING = False
+	if held_keys['d'] and not flags.ROTATING and not flags.JUMPING:
+		flags.ROTATING = True
 		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
 		bean.jump()
-	if held_keys['a'] and not ROTATING and not JUMPING:
-		ROTATING = True
+	if held_keys['a'] and not flags.ROTATING and not flags.JUMPING:
+		flags.ROTATING = True
 		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
 		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
 		bean.jump()
-	if held_keys['space'] and not ROTATING and not JUMPING:
-		JUMPING = True
-		bean.jump()
+	if held_keys['space'] and not flags.ROTATING and not flags.JUMPING:
+		if flags.CAN_JUMP:
+			flags.JUMPING = True
+			bean.jump()
+		else:
+			flags.JUMPING = True
+			bean.jump(height=.01, duration=.1)
 		
 	if key == 'w' or key == 'up arrow':
 		pass
@@ -209,7 +261,9 @@ def input(key):
 
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
+last_wall = flags.CURRENT_WALL
 def update():
+	global last_wall
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
 	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE
 	SCROLL_SPEED = flags.SCROLL_SPEED
@@ -217,11 +271,14 @@ def update():
 	# LIGHT.look_at(bean)
 	# TEXT.text = str(LIGHT.position)
 
+	if not flags.STORE and not GAME_OVER:
+		bean.enabled = True
+
 	update_camera_shake(camera)
 	if GAME_OVER:
 		return
 	
-	SCORE += time.dt * 10
+	SCORE += time.dt * 20 * flags.SCROLL_SPEED
 	score_ui.text = f'Score: {int(SCORE)}'
 
 	for element in [sides_A, sides_B, sides_C, sides_D]:
@@ -234,9 +291,17 @@ def update():
 	if flags.SCROLL_SPEED != 0:
 		coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
-	if bean.enabled:
+	if not flags.STORE:
 		# Determine which side is currently "down"
 		angle = rotation_pivot.rotation_z % 360
+
+		flags.CURRENT_WALL = int(angle//90)
+		if flags.CURRENT_WALL != last_wall:
+			clear_effects[last_wall]()
+			effects[flags.CURRENT_WALL]()
+			last_wall = flags.CURRENT_WALL
+
+	if bean.enabled:
 		# print(JUMPING, bean.y)
 
 		if 300 <= angle or angle <= 60:
@@ -370,7 +435,8 @@ if __name__ == '__main__':
 		position=(-0.75, 0.3),
 		color=color.azure,
 		text='Open Shop',
-		on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
+		on_click=item_shop.show_shop
+		# on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
 	)
 
 
