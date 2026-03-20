@@ -16,6 +16,19 @@ fisheye_shader = Shader(
     fragment=fragment_src
 )
 
+with open('assets/shaders/nausea.vert', 'r') as f:
+    vertex_src = f.read()
+
+with open('assets/shaders/nausea.frag', 'r') as f:
+    fragment_src = f.read()
+
+nausea_shader = Shader(
+      name='nausea',
+      language=Shader.GLSL,
+      vertex=vertex_src,
+      fragment=fragment_src
+)
+
 # global camera_base_rot, camera_base_pos
 
 shake_timer = 0.0
