@@ -82,10 +82,11 @@ class Character(Entity):
 			y=-2.2
 		)
 		self.particles = Particles(
-			self.position,
+			Vec3(0, -1.5, 0),
 			self.scale[1],
 			particle_size=0.1,
-			debug_position=True
+			debug_position=True,
+			parent=self
 			)
 
 		player_graphics.play_animation('run')
@@ -109,8 +110,8 @@ class Character(Entity):
 
 	def update(self):
 		hit = self.intersects()
-		self.particles.set_position(self.position)
-		print(self.particles.position)
+		# self.particles.set_position(self.position)
+		# print(self.particles.position)
 		if hit.hit and hit.entity:
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):

@@ -200,7 +200,7 @@ def clear_B():
 	n_steps = 10
 	duration = .1
 	for i in range(n_steps):
-		invoke(change_speed, DEFAULT_SCROLL_SPEED*(5 - i*5/n_steps), delay=i/n_steps*duration)
+		invoke(change_speed, flags.SCROLL_SPEED*(5 - i*5/n_steps), delay=i/n_steps*duration)
 	bean.animate_z(bean.z - 1, duration=duration, curve=curve.linear)	
 
 def effects_C():

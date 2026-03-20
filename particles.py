@@ -9,13 +9,14 @@ def random_vec3(length=1.0):
     return v.normalized() * length
 
 class Particles():
-	def __init__(self, position, size, particle_number=100, particle_size=.01, color=color.red, debug_position=False):
+	def __init__(self, position, size, particle_number=100, particle_size=.01, color=color.red, debug_position=False, parent=None):
 		self.position = position
 		self.size = size
 		self.particle_number = particle_number
 		self.particle_size = particle_size
 		self.color = color
 		self.particles = []
+		self.parent=parent
 		for n in range(particle_number):
 			self.particles.append(
 				Entity(
@@ -23,7 +24,8 @@ class Particles():
 					position=self.position,
 					scale=self.particle_size,
 					color=self.color,
-					enabled=False
+					enabled=False,
+					parent=self.parent
 					)
 			)
 		self.playable = True
@@ -33,7 +35,8 @@ class Particles():
 			model='sphere',
 			scale=self.size/2,
 			color=color,
-			enabled=debug_position
+			enabled=debug_position,
+			parent=self.parent
 		)
 
 	def play(self, duration, curve):
