@@ -18,6 +18,7 @@ class Obstacle(Entity):
 	
 	def update(self):
 		global LENGTH
+		print(flags.SCROLL_SPEED)
 		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		if self.z > 5:
 			destroy(self)
