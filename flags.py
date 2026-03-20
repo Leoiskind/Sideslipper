@@ -1,0 +1,4 @@
+JUMPING		= False
+TURNING		= False
+STORE		= False
+SCROLL_SPEED= 0.1

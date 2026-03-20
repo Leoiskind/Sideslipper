@@ -1,8 +1,10 @@
-from ursina import Entity, Vec3, color, time, destroy
+from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve
 from ursina.shaders import lit_with_shadows_shader
-from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, JUMPING, GRAPHICS_SCALE
+from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE
+import flags
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
+from camera import start_camera_shake, to_store
 
 class Character(Entity):
 	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy'):
@@ -79,8 +81,7 @@ class Character(Entity):
 		self.on_death_callback=None
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
-		global JUMPING
-		JUMPING = True
+		flags.JUMPING = True
 		self.animate_position(
 			self.position + Vec3(0, BEAN_HEIGHT*2, 0),
 			duration=TURN_TIME/2,
@@ -95,14 +96,19 @@ class Character(Entity):
 
 	def update(self):
 		hit = self.intersects()
-		if hit.hit and hit.entity and getattr(hit.entity, 'is_obstacle', False):
-			print("dead 3")
-			for shadow in self.shadows:
-				shadow.enabled = False
-			
-			if self.on_death_callback is not None:
-				self.on_death_callback()
+		if hit.hit and hit.entity:
+			if getattr(hit.entity, 'is_obstacle', True):
+				print("Bean dead")
+				start_camera_shake(strength=0.2, duration=0.3)
+        self.on_death_callback()
+				self.enabled = False
+				for shadow in self.shadows:
+					shadow.enabled = False
+			else:
+				print("Enter store")
+				flags.SCROLL_SPEED = 0
+				flags.STORE = True
+				self.enabled = False
 				
-			self.enabled = False
 
   

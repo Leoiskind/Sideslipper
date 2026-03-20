@@ -1,8 +1,9 @@
-from ursina import Entity, color, time, destroy
-from config import SCROLL_SPEED, LENGTH, CORRIDOR_HEIGHT
+from ursina import Entity, color, time, destroy, Vec3
+from config import LENGTH, CORRIDOR_HEIGHT
+import flags
 
 class Obstacle(Entity):
-	global SCROLL_SPEED, LENGTH, CORRIDOR_HEIGHT
+	global LENGTH, CORRIDOR_HEIGHT
 	def __init__(self, position, scale, is_obstacle=True, **kwargs):
 		super().__init__(
 			position=position,
@@ -11,7 +12,7 @@ class Obstacle(Entity):
 			double_sided=True,
 			color=color.red,
 			collider='box',
-			speed=SCROLL_SPEED * LENGTH,
+			speed=flags.SCROLL_SPEED * LENGTH,
 			is_obstacle=is_obstacle,
 			**kwargs
 		)
@@ -42,3 +43,8 @@ class MiddleObstacle(Obstacle):
 	def __init__(self, z, scale=(CORRIDOR_HEIGHT/4, CORRIDOR_HEIGHT/4, 0.5), **kwargs):
 		super().__init__((0, 0, z), scale, is_obstacle=True, **kwargs)
 		self.color = color.orange
+
+class StoreObstacle(Obstacle):
+	def __init__(self, z, scale=(CORRIDOR_HEIGHT/4, CORRIDOR_HEIGHT/4), is_obstacle=False, **kwargs):
+		super().__init__((0, CORRIDOR_HEIGHT/8 - CORRIDOR_HEIGHT/2, z), scale, is_obstacle, **kwargs)
+		self.color = color.green
