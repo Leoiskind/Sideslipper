@@ -29,8 +29,7 @@ window.vsync = False
 # shadow_box = Entity(model='wireframe_cube', scale=20, visible=True)
 # LIGHT.update_bounds(shadow_box)  # update light's shadow bounds to encompass the whole scene
 # LIGHT.update_bounds(scene)
-AmbientLight(color=color.rgba(1,1,1,100))
-
+# AmbientLight(color=color.rgba(1,1,1,100))
 # LIGHT_BALL = Entity(parent=LIGHT, model='sphere', scale=0.2, color=color.yellow, unlit_entity=True)
 
 def to_shop():
@@ -40,7 +39,6 @@ def to_shop():
 	update_camera_shake(camera)
 	item_shop.enabled = True
 	item_shop.show_shop()
-	application.paused = True
 
 # -----------------
 # Rotation things
@@ -51,12 +49,22 @@ rotation_pivot = Entity(parent=vertical_root)
 # -----------------
 # Corridor segments
 # -----------------
-sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.gray) for i in range(SEG_COUNT)]
-sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(SEG_COUNT)]
-sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(SEG_COUNT)]
-sides_D = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 180), color=color.orange) for i in range(SEG_COUNT)]
+# sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.gray) for i in range(SEG_COUNT)]
+# sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(SEG_COUNT)]
+# sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(SEG_COUNT)]
+# sides_D = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 180), color=color.orange) for i in range(SEG_COUNT)]
 
-sides = sides_A + sides_B + sides_C + sides_D
+# sides = sides_A + sides_B + sides_C + sides_D
+
+sides = create_sides(SEG_COUNT)
+
+# def hide_sides():
+# 	for side in sides:
+# 		side.enabled = False
+
+# def show_sides():
+# 	for side in sides:
+# 		side.enabled = False
 
 # -----------------
 # Player (bean)
@@ -128,12 +136,12 @@ def show_death_screen():
 bean.on_death_callback = trigger_death
 
 def restart_game():
-	global GAME_OVER, SCORE, SPEED
+	global GAME_OVER, SCORE, DEFAULT_SCROLL_SPEED
 	
 	print("Restarting game...")
 	GAME_OVER = False
 	SCORE = 0
-	SPEED = 0  # Reset to your base starting speed
+	flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED  # Reset to your base starting speed
 	
 	# Reset Player Stats
 	player.coins = 0
@@ -174,27 +182,38 @@ def effect_A():
 def clear_A():
 	flags.CAN_JUMP = True
 
+def change_speed(speed):
+	flags.SCROLL_SPEED = speed
+
 def effect_B():
 	print("increased speed")
-	global DEFAULT_SCROLL_SPEED
-	flags.SCROLL_SPEED = 5*DEFAULT_SCROLL_SPEED
+	global DEFAULT_SCROLL_SPEED, bean
+	n_steps = 10
+	duration = .1
+	for i in range(n_steps):
+		invoke(change_speed, DEFAULT_SCROLL_SPEED*(1 + i*5/n_steps), delay=i/n_steps*duration)
+	bean.animate_z(bean.z + 1, duration=duration, curve=curve.linear)	
 
 def clear_B():
 	print("reduced speed")
-	global DEFAULT_SCROLL_SPEED
-	flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
+	global DEFAULT_SCROLL_SPEED, bean
+	n_steps = 10
+	duration = .1
+	for i in range(n_steps):
+		invoke(change_speed, flags.SCROLL_SPEED*(5 - i*5/n_steps), delay=i/n_steps*duration)
+	bean.animate_z(bean.z - 1, duration=duration, curve=curve.linear)	
 
 def effects_C():
-	pass
+	flags.CAN_LEFT = False
 
 def clear_C():
-	pass
+	flags.CAN_LEFT = True
 
 def effects_D():
-	pass
+	flags.CAN_RIGHT = False
 
 def clear_D():
-	pass
+	flags.CAN_RIGHT = True
 
 effects = [effect_A, effect_B, effects_C, effects_D]
 clear_effects = [clear_A, clear_B, clear_C, clear_D]
@@ -214,24 +233,25 @@ def input(key):
 
 	if key=='k':
 		trigger_death()
-	
-	if rotation_pivot.rotation_z %90 == 0:
-		flags.ROTATING=False
 
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		flags.ROTATING = False
 	if bean.y == 0:
 		flags.JUMPING = False
 	if held_keys['d'] and not flags.ROTATING and not flags.JUMPING:
-		flags.ROTATING = True
-		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
-		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
-		bean.jump()
+		if flags.CAN_RIGHT:
+			flags.ROTATING = True
+			bean.jump()
+			rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
+		else:
+			start_camera_shake(strength=0.02)
 	if held_keys['a'] and not flags.ROTATING and not flags.JUMPING:
-		flags.ROTATING = True
-		# start_camera_shake(strength=0.05, duration=0.3)  # shake the camera when we switch sides!
-		rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
-		bean.jump()
+		if flags.CAN_LEFT:
+			flags.ROTATING = True
+			rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
+			bean.jump()
+		else:
+			start_camera_shake(strength=0.02)
 	if held_keys['space'] and not flags.ROTATING and not flags.JUMPING:
 		if flags.CAN_JUMP:
 			flags.JUMPING = True
@@ -262,10 +282,11 @@ def input(key):
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 last_wall = flags.CURRENT_WALL
+scroll_phase = 0
 def update():
 	global last_wall
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
-	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE
+	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE, scroll_phase
 	SCROLL_SPEED = flags.SCROLL_SPEED
 	
 	# LIGHT.look_at(bean)
@@ -281,19 +302,18 @@ def update():
 	SCORE += time.dt * 20 * flags.SCROLL_SPEED
 	score_ui.text = f'Score: {int(SCORE)}'
 
-	for element in [sides_A, sides_B, sides_C, sides_D]:
-		for side in element:
-			side.texture_offset = (0, (time.time() * -SCROLL_SPEED) % 1)  # scroll texture to simulate movement
-			side.z += SPEED * time.dt
-			if side.z > SIDES_Z_0 + LENGTH:
-				side.z = get_last_z(element) - LENGTH
+	scroll_speed = 0
+	scroll_phase += flags.SCROLL_SPEED * time.dt
+
+	for side in sides:
+		side.texture_offset = (0, -scroll_phase % 1)
 	
 	if flags.SCROLL_SPEED != 0:
 		coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
 	if not flags.STORE:
 		# Determine which side is currently "down"
-		angle = rotation_pivot.rotation_z % 360
+		angle = (rotation_pivot.rotation_z+45) % 360
 
 		flags.CURRENT_WALL = int(angle//90)
 		if flags.CURRENT_WALL != last_wall:
@@ -302,7 +322,7 @@ def update():
 			last_wall = flags.CURRENT_WALL
 
 	if bean.enabled:
-		# print(JUMPING, bean.y)
+		angle = rotation_pivot.rotation_z % 360
 
 		if 300 <= angle or angle <= 60:
 			bean.shadows[0].enabled = True

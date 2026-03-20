@@ -1,5 +1,6 @@
 from ursina import Shader, Vec3, time, random
 import flags
+from config import DEFAULT_STRENGTH_SHADER
 
 with open('assets/shaders/fisheye.vert', 'r') as f:
     vertex_src = f.read()
@@ -20,7 +21,7 @@ fisheye_shader = Shader(
 shake_timer = 0.0
 shake_duration = 0.0
 shake_strength = 0.0
-camera_base_pos = Vec3(.7, 0, 0)
+camera_base_pos = Vec3(.7, 0, -5)
 camera_base_rot = Vec3(7, 190, 0)
 
 def start_camera_shake(strength=0.15, duration=0.2):
@@ -30,7 +31,9 @@ def start_camera_shake(strength=0.15, duration=0.2):
     shake_strength = strength
 
 def update_camera_shake(camera):
-	global shake_timer, camera_base_rot, camera_base_pos
+	global shake_timer, camera_base_rot, camera_base_pos, DEFAULT_STRENGTH_SHADER
+      
+	camera.set_shader_input('strength', DEFAULT_STRENGTH_SHADER*flags.SCROLL_SPEED*10)
 
 	if shake_timer > 0:
 		shake_timer -= time.dt
