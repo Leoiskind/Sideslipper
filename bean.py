@@ -5,6 +5,7 @@ import flags
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
 from camera import start_camera_shake
+from particles import Particles
 
 class Character(Entity):
 	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy', on_shop_callback=None):
@@ -80,6 +81,12 @@ class Character(Entity):
 			parent=self,
 			y=-2.2
 		)
+		self.particles = Particles(
+			self.position,
+			self.scale[1],
+			particle_size=0.1,
+			debug_position=True
+			)
 
 		player_graphics.play_animation('run')
 		ALIVE = True
@@ -88,13 +95,13 @@ class Character(Entity):
 
 	def jump(self, height=BEAN_HEIGHT*2, duration=TURN_TIME):
 		flags.JUMPING = True
-		self.animate_position(
-			self.position + Vec3(0, height, 0),
+		self.animate_y(
+			self.y + height,
 			duration=duration/2,
 			curve=CURVE_JUMP_UP
 		)
-		self.animate_position(
-			Vec3(0, 0, -10),
+		self.animate_y(
+			0,
 			duration=duration/2,
 			delay=duration/2,
 			curve=CURVE_JUMP_DOWN
@@ -102,18 +109,22 @@ class Character(Entity):
 
 	def update(self):
 		hit = self.intersects()
+		self.particles.set_position(self.position)
+		print(self.particles.position)
 		if hit.hit and hit.entity:
-			if getattr(hit.entity, 'is_obstacle', True):
-				print("Bean dead")
-				start_camera_shake(strength=0.2, duration=0.3)
-				self.on_death_callback()
-				self.enabled = False
-				for shadow in self.shadows:
-					shadow.enabled = False
-			else:
-				print("Enter store")
-				destroy(hit.entity)
-				self.on_shop_callback()
-				flags.SCROLL_SPEED = 0
-				flags.STORE = True
-				self.enabled = False
+			if isinstance(hit.entity, Obstacle):
+				if getattr(hit.entity, 'is_obstacle', True):
+					print("Bean killed by", hit.entity)
+					self.particles.play(.3, curve.linear)
+					start_camera_shake(strength=0.2, duration=0.3)
+					self.on_death_callback()
+					self.enabled = False
+					for shadow in self.shadows:
+						shadow.enabled = False
+				else:
+					print("Enter store")
+					destroy(hit.entity)
+					self.on_shop_callback()
+					flags.SCROLL_SPEED = 0
+					flags.STORE = True
+					self.enabled = False
