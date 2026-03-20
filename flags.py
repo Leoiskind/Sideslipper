@@ -1,4 +1,6 @@
 JUMPING		= False
-TURNING		= False
+ROTATING	= False
 STORE		= False
 SCROLL_SPEED= 0.1
+CURRENT_WALL= 0
+CAN_JUMP	= True

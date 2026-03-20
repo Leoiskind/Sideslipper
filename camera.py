@@ -30,15 +30,7 @@ def start_camera_shake(strength=0.15, duration=0.2):
     shake_strength = strength
 
 def update_camera_shake(camera):
-	global shake_timer
-    
-	print(flags.STORE)
-	if flags.STORE:
-		camera_base_pos = Vec3(-10, 10, 0)
-		camera_base_rot = Vec3(0, 180, 0)
-	else:
-		camera_base_pos = Vec3(.7, 0, 0)
-		camera_base_rot = Vec3(7, 190, 0)
+	global shake_timer, camera_base_rot, camera_base_pos
 
 	if shake_timer > 0:
 		shake_timer -= time.dt

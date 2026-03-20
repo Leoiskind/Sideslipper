@@ -19,8 +19,9 @@ class Coin(Entity):
 		self.speed=flags.SCROLL_SPEED * LENGTH
 	
 	def update(self):
+		global LENGTH
 		self.rotation_x += 100 * time.dt
-		self.z += self.speed * time.dt
+		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		hit_info = self.intersects()
 		if hit_info.hit and hit_info.entity == self.player:
 			self.player.coins +=1

@@ -4,10 +4,10 @@ from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE
 import flags
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
-from camera import start_camera_shake, to_store
+from camera import start_camera_shake
 
 class Character(Entity):
-	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy'):
+	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy', on_shop_callback=None):
 		super().__init__()
 		self.model = model
 		self.scale = scale
@@ -16,7 +16,7 @@ class Character(Entity):
 		self.origin = origin
 		self.collider = 'box'
 		self.shadow = True
-		self.shader=lit_with_shadows_shader
+		self.shader = lit_with_shadows_shader
 		self.shadow_A = Entity(
 			parent=self,
 			model='quad',
@@ -28,6 +28,7 @@ class Character(Entity):
 			texture='circle',
 			unlit_entity=True,
 		)
+		self.on_shop_callback = on_shop_callback
 		self.shadow_B = Entity(
 			parent=self,
 			model='quad',
@@ -65,20 +66,25 @@ class Character(Entity):
 			enabled=False
 		)
 		self.shadows = [self.shadow_A, self.shadow_B, self.shadow_C, self.shadow_D]
-		player_graphics = SpriteSheetAnimation('running_guy', tileset_size=(2,2), fps=6, animations={
-		'run': ((0, 1), (1, 1))
-		},
-		unlit=True,
-		double_sided=True,
-		rotation=(0, 180, 0),
-		scale=(GRAPHICS_SCALE, GRAPHICS_SCALE),
-		parent=self,
-		y=-2.2)
+		player_graphics = SpriteSheetAnimation(
+			'running_guy',
+			tileset_size=(2,2),
+			fps=6,
+			animations={
+				'run': ((0, 1), (1, 1))
+			},
+			unlit=True,
+			double_sided=True,
+			rotation=(0, 180, 0),
+			scale=(GRAPHICS_SCALE, GRAPHICS_SCALE),
+			parent=self,
+			y=-2.2
+		)
 
 		player_graphics.play_animation('run')
 		ALIVE = True
 		player_graphics.play_animation('run')
-		self.on_death_callback=None
+		self.on_death_callback = None
 
 	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
 		flags.JUMPING = True
@@ -100,15 +106,14 @@ class Character(Entity):
 			if getattr(hit.entity, 'is_obstacle', True):
 				print("Bean dead")
 				start_camera_shake(strength=0.2, duration=0.3)
-        self.on_death_callback()
+				self.on_death_callback()
 				self.enabled = False
 				for shadow in self.shadows:
 					shadow.enabled = False
 			else:
 				print("Enter store")
+				destroy(hit.entity)
+				self.on_shop_callback()
 				flags.SCROLL_SPEED = 0
 				flags.STORE = True
 				self.enabled = False
-				
-
-  
