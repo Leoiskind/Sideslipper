@@ -86,17 +86,17 @@ class Character(Entity):
 		player_graphics.play_animation('run')
 		self.on_death_callback = None
 
-	def jump(self, height=BEAN_HEIGHT/2, duration=TURN_TIME):
+	def jump(self, height=BEAN_HEIGHT*2, duration=TURN_TIME):
 		flags.JUMPING = True
 		self.animate_position(
-			self.position + Vec3(0, BEAN_HEIGHT*2, 0),
-			duration=TURN_TIME/2,
+			self.position + Vec3(0, height, 0),
+			duration=duration/2,
 			curve=CURVE_JUMP_UP
 		)
 		self.animate_position(
 			Vec3(0, 0, -10),
-			duration=TURN_TIME/2,
-			delay=TURN_TIME/2,
+			duration=duration/2,
+			delay=duration/2,
 			curve=CURVE_JUMP_DOWN
 		)
 

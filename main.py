@@ -238,7 +238,7 @@ def input(key):
 			bean.jump()
 		else:
 			flags.JUMPING = True
-			bean.jump(height=.01, duration=.1)
+			bean.jump(height=.03, duration=.1)
 		
 	if key == 'w' or key == 'up arrow':
 		pass
