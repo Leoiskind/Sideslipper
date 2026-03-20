@@ -34,11 +34,13 @@ window.vsync = False
 
 def to_shop():
 	flags.STORE = True
+	flags.INVENTORY = True
 	cam.camera_base_pos = Vec3(-10, 10, 0)
 	cam.camera_base_rot = Vec3(0, 0, 0)
 	update_camera_shake(camera)
 	item_shop.enabled = True
 	item_shop.show_shop()
+	inventory.show_inventory()
 
 # -----------------
 # Rotation things
@@ -191,7 +193,7 @@ def effect_B():
 	n_steps = 10
 	duration = .1
 	for i in range(n_steps):
-		invoke(change_speed, DEFAULT_SCROLL_SPEED*(1 + i*5/n_steps), delay=i/n_steps*duration)
+		invoke(change_speed, flags.SCROLL_SPEED + i*5/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*duration)
 	bean.animate_z(bean.z + 1, duration=duration, curve=curve.linear)	
 
 def clear_B():
@@ -200,7 +202,7 @@ def clear_B():
 	n_steps = 10
 	duration = .1
 	for i in range(n_steps):
-		invoke(change_speed, flags.SCROLL_SPEED*(5 - i*5/n_steps), delay=i/n_steps*duration)
+		invoke(change_speed, flags.SCROLL_SPEED - i*5/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*duration)
 	bean.animate_z(bean.z - 1, duration=duration, curve=curve.linear)	
 
 def effects_C():
@@ -279,12 +281,18 @@ def input(key):
 	if held_keys['n']: camera_base_pos[1] -= speed
 	if held_keys['m']: camera_base_pos[1] += speed
 
+def add_to_score_mult(amount):
+	global score_multiplier
+	score_multiplier += amount
+
+
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 last_wall = flags.CURRENT_WALL
 scroll_phase = 0
+score_multiplier = 1
 def update():
-	global last_wall
+	global last_wall, shop_was_open
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
 	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE, scroll_phase
 	SCROLL_SPEED = flags.SCROLL_SPEED
@@ -299,7 +307,7 @@ def update():
 	if GAME_OVER:
 		return
 	
-	SCORE += time.dt * 20 * flags.SCROLL_SPEED
+	SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
 	score_ui.text = f'Score: {int(SCORE)}'
 
 	scroll_speed = 0
@@ -311,16 +319,25 @@ def update():
 	if flags.SCROLL_SPEED != 0:
 		coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
+	if not flags.INVENTORY:
+		inventory.hide_inventory()
+
+	if flags.STORE:
+		shop_was_open = True
+
 	if not flags.STORE:
 		# Determine which side is currently "down"
 		angle = (rotation_pivot.rotation_z+45) % 360
 
 		flags.CURRENT_WALL = int(angle//90)
+
 		if flags.CURRENT_WALL != last_wall:
 			clear_effects[last_wall]()
 			effects[flags.CURRENT_WALL]()
 			last_wall = flags.CURRENT_WALL
+			shop_was_open = False
 
+	# Update shadows based on rotation
 	if bean.enabled:
 		angle = rotation_pivot.rotation_z % 360
 
@@ -366,11 +383,16 @@ if __name__ == '__main__':
 	inventory=Inventory()
 	inventory.hide_inventory()
 
-	def add_item():
-		inventory.append(random.choice(['nachos', 'fries', 'hash_brown', 'rice']))
+	items = ['nachos', 'fries', 'hash_brown',
+		  'rice', 'chocolate', 'shroom',
+		  'donut', 'croissant', 'pizza']
 
-	for i in range(7):
-		inventory.append('nachos')
+	def add_item():
+		inventory.append(random.choice(items))
+
+	for item in items:
+		inventory.append(item)
+
 	add_item_button = Button(
 		scale = (.1,.1),
 		x=-.5,
@@ -379,31 +401,19 @@ if __name__ == '__main__':
 		tooltip=Tooltip('Add random item'),
 		on_click=add_item
 	)
-	hide_inventory_button = Button(
-		scale = (.1,.1),
-		x=.5,
-		color=color.red.tint(-.25),
-		text='-',
-		tooltip=Tooltip('hide inventory'),
-		on_click=inventory.hide_inventory
-	)
-	show__inventory_button = Button(
-		scale = (.1,.1),
-		x=.5,
-		y=.15,
-		color=color.green.tint(-.25),
-		text='+',
-		tooltip=Tooltip('show inventory'),
-		on_click=inventory.show_inventory
-	)
 	player = bean
 	player.coins = 0
 
+	show_inventory_button = Button(
+		scale=(0.15, 0.05),
+		position=(-0.75, 0),
+		color=color.azure,
+		text='Show Inventory',
+		on_click=inventory.show_inventory
+	)
+
 	# 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
-	Coin(position=(0, -1.25, -30), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-	Coin(position=(1.25, 0, -40), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-	Coin(position=(0, 1.25, -50), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
 
 	# --- ADD THIS: Initialize the Shop ---
 	# Pass the player, the inventory, and the UI text so the shop can edit them!
@@ -417,16 +427,12 @@ if __name__ == '__main__':
 	#------
 	# Manages effects
 	#------
-	# 1. Create a "Remote Control" function so the EffectsManager can safely edit SPEED
-	def update_game_speed(amount):
-		global SPEED
-		SPEED += amount
 
 	# 2. Start up the new Effects Manager and hand it the player, the UI, and the remote control
 	effect_manager = EffectsManager(
 		player=player, 
-		coin_counter_ui=coin_counter_ui, 
-		speed_callback=update_game_speed
+		coin_counter_ui=coin_counter_ui,
+		score_mult_callback=add_to_score_mult
 	)
 
 	# 3. Tell the inventory to use the manager's logic when items are eaten!

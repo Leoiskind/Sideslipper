@@ -1,4 +1,6 @@
 from ursina import *
+import flags
+from config import DEFAULT_SCROLL_SPEED
 
 active_timers = []
 
@@ -24,32 +26,43 @@ class EffectTimer(Entity):
 # --- NEW: The Effects Manager ---
 class EffectsManager:
     # 1. Catch the references passed from main.py
-    def __init__(self, player, coin_counter_ui, speed_callback):
+    def __init__(self, player, coin_counter_ui, score_mult_callback):
         self.player = player
         self.coin_counter_ui = coin_counter_ui
-        self.change_speed = speed_callback  # A remote control to change SPEED in main.py
+        self.score_mult_callback = score_mult_callback
+        self.extra_time = 0
+        self.effect_time = {
+            'chocolate': 4,
+            'pizza': 3,
+            'nachos': 5
+        }
+        self.effect_uses = {}
 
     # 2. Your effects logic, updated to use "self."
     def apply_item_effects(self, item_name):
-        if item_name == 'fries':
-            self.change_speed(30)  
-            EffectTimer('fries', 4) 
+        if item_name == 'chocolate':
+            flags.SCROLL_SPEED += .5
+            EffectTimer('chocolate', 4) 
             
-            def reset_fries():
-                self.change_speed(-30)
-            invoke(reset_fries, delay=4)
+            def reset_chocolate():
+                flags.SCROLL_SPEED -= .5
+            invoke(reset_chocolate, delay=self.effect_time['chocolate'] + self.extra_time)
 
-        elif item_name == 'hash_brown':
-            self.change_speed(-20)  
-            EffectTimer('hash_brown', 3) 
+        elif item_name == 'pizza':
+            flags.SCROLL_SPEED -= 0.2 * DEFAULT_SCROLL_SPEED
+            print(flags.SCROLL_SPEED)
+            EffectTimer('pizza', 3) 
             
-            def reset_slow():
-                self.change_speed(20)
-            invoke(reset_slow, delay=3)
+            def reset_pizza():
+                flags.SCROLL_SPEED += .2 * DEFAULT_SCROLL_SPEED
+            invoke(reset_pizza, delay=self.effect_time['pizza'] + self.extra_time)
 
         elif item_name == 'nachos':
-            self.player.coins += 10
-            self.coin_counter_ui.text = f'Coins: {self.player.coins}'
-            
+            self.score_mult_callback(.5)
+            EffectTimer('nachos', self.effect_time['nachos'])
+
+            def reset_nachos():
+                self.score_mult_callback(-0.5)
+            invoke(reset_nachos, delay=self.effect_time['nachos'] + self.extra_time)
         else:
             print(f"You ate {item_name}, but nothing happened.")

@@ -6,3 +6,4 @@ CURRENT_WALL= 0
 CAN_JUMP	= True
 CAN_LEFT	= True
 CAN_RIGHT	= True
+INVENTORY	= False

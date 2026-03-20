@@ -8,9 +8,9 @@ class Shop(Entity):
 		super().__init__(
 			parent=camera.ui,
 			model='quad',
-			scale=(0.8, 0.5),      # A wide rectangle in the center of the screen
-			position=(0, 0),
-			color=color.rgba(20, 20, 20, 240), # Dark semi-transparent background
+			scale=(0.8, 0.25),      # A wide rectangle in the center of the screen
+			position=(0, -.20),
+			color=color.dark_gray, # Dark semi-transparent background
 			enabled=False          # Start with the shop hidden
 		)
 
@@ -55,7 +55,7 @@ class Shop(Entity):
 
 	def buy_item(self, item_name, cost, btn):
 		# Check if the player has enough money
-		if self.player.coins >= cost:
+		if self.player.coins >= cost and not flags.INVENTORY_FULL:
 			# Take the money
 			self.player.coins -= cost
 			self.coin_counter_ui.text = f'Coins: {self.player.coins}'
@@ -71,6 +71,7 @@ class Shop(Entity):
 
 	def show_shop(self):
 		print("Showing shop")
+		flags.SHOP = True
 		flags.SCROLL_SPEED = 0
 		self.enabled = True
 
@@ -79,7 +80,8 @@ class Shop(Entity):
 		application.paused = False
 		cam.camera_base_pos = CAM_BASE_POS
 		cam.camera_base_rot = CAM_BASE_ROT
-		flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
 		flags.STORE = False
+		flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
+		flags.INVENTORY = False
 		self.enabled = False
 		
