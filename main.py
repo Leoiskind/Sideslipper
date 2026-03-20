@@ -128,12 +128,12 @@ def show_death_screen():
 bean.on_death_callback = trigger_death
 
 def restart_game():
-	global GAME_OVER, SCORE, SPEED
+	global GAME_OVER, SCORE, DEFAULT_SCROLL_SPEED
 	
 	print("Restarting game...")
 	GAME_OVER = False
 	SCORE = 0
-	SPEED = 0  # Reset to your base starting speed
+	flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED  # Reset to your base starting speed
 	
 	# Reset Player Stats
 	player.coins = 0

@@ -4,6 +4,7 @@ import flags
 # -----------------
 # Corridor config
 # -----------------
+SEG_COUNT	= 5
 WIDTH		= 3.0    # corridor width (x)
 HEIGHT		= 1.0    # corridor height (y)
 LENGTH		= 100.0  # length of each corridor segment (z)
@@ -26,11 +27,11 @@ GRAPHICS_SCALE = 2  # scale for the player graphics (running animation)
 # -----------------
 FOV = 60  # Field of view for the camera
 STORE		= False
+DEFAULT_STRENGTH_SHADER= .1
 
 # -----------------
 # Main config
 # -----------------
-SEG_COUNT	= 10
 SPEED		= 0.0    # how fast segments move toward the bean
 DEFAULT_SCROLL_SPEED= .1
 TURN_TIME	= 0.5     # how long it takes to rotate segments when switching attachment
