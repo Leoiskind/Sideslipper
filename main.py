@@ -9,8 +9,10 @@ from obstacles import *
 from shop import *
 from effects import EffectsManager
 from camera import *
+from generators import *
 import camera as cam
 import flags
+from panda3d.core import Fog
 
 """
 
@@ -18,20 +20,14 @@ import flags
 
 app = Ursina()
 Entity.default_shader = lit_with_shadows_shader
+CorridorSegment.default_shader = None
 Text.default_font = 'assets/fonts/Pix32.ttf'
+song_names = ['song1.mp3', 'song2.mp3', 'song3.mp3']
+song = Audio(random.choice(song_names), loop=True, autoplay=True, volume=flags.SONG_VOLUME)
 
 window.title = '4-sided corridor - Ursina base'
 window.borderless = False
 window.vsync = False
-
-# simple ambient light + directional
-# LIGHT = DirectionalLight(x = 0, y=0.0, z=-10, shadows=True)
-# LIGHT.look_at(Vec3(0, -1, -11))
-# shadow_box = Entity(model='wireframe_cube', scale=20, visible=True)
-# LIGHT.update_bounds(shadow_box)  # update light's shadow bounds to encompass the whole scene
-# LIGHT.update_bounds(scene)
-# AmbientLight(color=color.rgba(1,1,1,100))
-# LIGHT_BALL = Entity(parent=LIGHT, model='sphere', scale=0.2, color=color.yellow, unlit_entity=True)
 
 def to_shop():
 	flags.STORE = True
@@ -50,22 +46,7 @@ rotation_pivot = Entity(parent=vertical_root)
 # -----------------
 # Corridor segments
 # -----------------
-# sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.gray) for i in range(SEG_COUNT)]
-# sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(SEG_COUNT)]
-# sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(SEG_COUNT)]
-# sides_D = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 180), color=color.orange) for i in range(SEG_COUNT)]
-
-# sides = sides_A + sides_B + sides_C + sides_D
-
 sides = create_sides(SEG_COUNT)
-
-# def hide_sides():
-# 	for side in sides:
-# 		side.enabled = False
-
-# def show_sides():
-# 	for side in sides:
-# 		side.enabled = False
 
 # -----------------
 # Player (bean)
@@ -82,17 +63,11 @@ bean = Character(
 # -----------------
 # Obstacles
 # -----------------
-Test_Lower = LowObstacle(z=-30, parent=rotation_pivot)
-Test_Higher = HighObstacle(z=-40, parent=rotation_pivot)
-Test_Wall = WallObstacle(z=-50, parent=rotation_pivot)
-Middle_obstacle = MiddleObstacle(z=-60, parent=rotation_pivot)
-Test_Shop = StoreObstacle(z=-80, parent=rotation_pivot)
-# obs_scale = .75
-# Test_Obstacle = Obstacle(
-# 	position=(0, (obs_scale-CORRIDOR_HEIGHT)/2, -30),
-# 	scale=(CORRIDOR_HEIGHT,obs_scale,0.5),
-# 	parent=rotation_pivot
-# 	)
+# Test_Lower = LowObstacle(z=-30, parent=rotation_pivot)
+# Test_Higher = HighObstacle(z=-40, parent=rotation_pivot)
+# Test_Wall = WallObstacle(z=-50, parent=rotation_pivot)
+# Middle_obstacle = MiddleObstacle(z=-60, parent=rotation_pivot)
+# Test_Shop = StoreObstacle(z=-80, parent=rotation_pivot)
 
 # -----------------
 # Rotation hierarchy
@@ -103,11 +78,9 @@ for shadow in bean.shadows:
 for side in sides:
 	side.parent = rotation_pivot
 
-# fisheye_shader.set_shader_input('strength', 1.0)  # full effect
 camera.shader = fisheye_shader
 camera.set_shader_input('strength', 0.1)
 camera.set_shader_input('pixel_size', 256)
-# camera.shader = None
 camera.origin = ORIGIN
 camera.position = Vec3(.7, 0, 0)
 camera.rotation = Vec3(7, 190, 0)
@@ -187,7 +160,7 @@ def empty_foo():
 	pass
 
 effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
-effect_B = EffectWall(set_nausea, clear_nausea, camera, 0.3)
+effect_B = EffectWall(set_nausea, clear_nausea, camera, .3)
 effect_C = EffectWall(flip_camera, return_camera, camera)
 effect_D = EffectWall(block_right, release_right)
 
@@ -213,6 +186,8 @@ def input(key):
 		flags.ROTATING = False
 	if bean.y == 0:
 		flags.JUMPING = False
+	if bean.scale_y == BEAN_HEIGHT:
+		flags.ROLLING = False
 	if held_keys['d'] and not flags.ROTATING and not flags.JUMPING:
 		if flags.CAN_RIGHT:
 			flags.ROTATING = True
@@ -234,6 +209,12 @@ def input(key):
 		else:
 			flags.JUMPING = True
 			bean.jump(height=.03, duration=.1)
+	if held_keys['shift'] and not flags.ROLLING:
+		if flags.CAN_ROLL:
+			flags.ROLLING = True
+			bean.roll()
+		else:
+			print("Can't roll")
 		
 	if key == 'w' or key == 'up arrow':
 		pass
@@ -274,6 +255,8 @@ def update():
 	if GAME_OVER:
 		return
 	
+	generator.update()
+	
 	SCORE += time.dt * 20 * flags.SCROLL_SPEED
 	score_ui.text = f'Score: {int(SCORE)}'
 
@@ -288,8 +271,8 @@ def update():
 	for side in sides:
 		side.texture_offset = (0, -scroll_phase % 1)
 	
-	if flags.SCROLL_SPEED != 0:
-		coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
+	# if flags.SCROLL_SPEED != 0:
+	# 	coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
 	if not flags.STORE:
 		# Determine which side is currently "down"
@@ -381,10 +364,8 @@ if __name__ == '__main__':
 
 	# 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
-	Coin(position=(0, -1.25, -30), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-	Coin(position=(1.25, 0, -40), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-	Coin(position=(0, 1.25, -50), player=player, coin_counter=coin_counter_ui, parent=rotation_pivot)
-
+	generator = Generator(create_obstacle, create_coin, player=bean, coin_parent=rotation_pivot, coin_counter=coin_counter_ui, spawn_ahead_segments=1)
+	generator.parent = scene
 	# --- ADD THIS: Initialize the Shop ---
 	# Pass the player, the inventory, and the UI text so the shop can edit them!
 	catalog={

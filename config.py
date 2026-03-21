@@ -22,6 +22,9 @@ JUMPING		= False
 CURVE_JUMP_UP= curve.out_quad  # easing curve for bean "jump" when switching attachment
 CURVE_JUMP_DOWN=curve.in_quad   # easing curve for bean "fall" when switching attachment
 GRAPHICS_SCALE = 2  # scale for the player graphics (running animation)
+ROLL_TIME	= .5
+CURVE_ROLL_DOWN= curve.linear
+CURVE_ROLL_UP= curve.linear
 
 # -----------------
 # Camera config
@@ -45,9 +48,9 @@ ROTATING	= False  # whether segments are currently rotating (to prevent input du
 # -----------------
 # Coin config
 # -----------------
-COIN_SPAWN_DISTANCE = 20  # how far apart coins are spawned (z)
+COIN_SPACING = 20  # how far apart coins are spawned (z)
 COIN_TIMER = 0
-COIN_TIME = COIN_SPAWN_DISTANCE / (flags.SCROLL_SPEED * LENGTH)  # time between coin spawns based on scroll speed
+COIN_TIME = COIN_SPACING / (flags.SCROLL_SPEED * LENGTH)  # time between coin spawns based on scroll speed
 COIN_POSITIONS = (
 	(0, -1.25, -50),
 	(-1.25, 0, -50),
@@ -55,3 +58,8 @@ COIN_POSITIONS = (
 	(1.25, 0, -50)
 	)
 COIN_RARITY = 1
+
+# -----------------
+# Obstacles
+# -----------------
+OBSTACLE_SPACING= 20

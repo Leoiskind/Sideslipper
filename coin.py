@@ -1,5 +1,5 @@
 from ursina import *
-from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, COIN_TIMER, COIN_SPAWN_DISTANCE, COIN_POSITIONS, COIN_RARITY
+from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, COIN_TIMER, COIN_SPACING, COIN_POSITIONS, COIN_RARITY
 import flags
 
 class Coin(Entity):
@@ -13,7 +13,7 @@ class Coin(Entity):
 			collider='box',
 			parent=parent
 		)
-
+		self.sound = Audio('coin.mp3', autoplay=False, volume=flags.FX_VOLUME)
 		self.player=player
 		self.coin_counter = coin_counter
 		self.speed=flags.SCROLL_SPEED * LENGTH
@@ -26,6 +26,7 @@ class Coin(Entity):
 		if hit_info.hit and hit_info.entity == self.player:
 			self.player.coins +=1
 			self.coin_counter.text = f'coins: {self.player.coins}'
+			self.sound.play()
 			destroy(self)
 			return
 		if self.z>5:
@@ -33,8 +34,8 @@ class Coin(Entity):
 			return
 		
 def coin_spawner(player, coin_counter_ui, parent):
-	global COIN_TIMER, COIN_SPAWN_DISTANCE, LENGTH, COIN_RARITY
-	coin_time = COIN_SPAWN_DISTANCE / (flags.SCROLL_SPEED * LENGTH)
+	global COIN_TIMER, COIN_SPACING, LENGTH, COIN_RARITY
+	coin_time = COIN_SPACING / (flags.SCROLL_SPEED * LENGTH)
 	COIN_TIMER += time.dt
 	if COIN_TIMER > coin_time:  # spawn a coin
 		COIN_TIMER -= coin_time

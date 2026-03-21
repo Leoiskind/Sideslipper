@@ -42,6 +42,7 @@ class Particles():
 				invoke(setattr, particle, 'enabled', False, delay=duration)
 				invoke(setattr, self, 'playable', True, delay=duration)
 
+
 ground = Entity(
     model='plane',
     scale=30,

@@ -2,7 +2,7 @@ from ursina import Entity, color, Vec3, invoke, curve
 from ursina.shaders import lit_with_shadows_shader
 from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SPEED_CHANGE, DEFAULT_SCROLL_SPEED
 import flags
-from camera import nausea_shader, fisheye_shader
+from camera import nausea_shader, fisheye_shader, camera_base_pos, camera_base_rot
 
 class CorridorSegment(Entity):
 	def __init__(self, z_pos, rotation, color=color.gray, parent=None, effect=None):
@@ -76,24 +76,31 @@ def block_left():
 def release_left():
 	flags.CAN_LEFT = True
 
+def block_jump():
+	flags.CAN_JUMP = False
+
+def release_jump():
+	flags.CAN_JUMP = True
+
 def flip_camera(camera):
-	camera.rotation[2] += 180
+	global camera_base_rot
+	camera_base_rot[2] += 180
 
 def return_camera(camera):
-	camera.rotation[2] -= 180
+	global camera_base_rot
+	camera_base_rot[2] += 180
 
 nausea_time = 0
 
 def set_nausea(camera, factor):
 	global nausea_time
-	print('Setting nausea')
 	camera.shader = nausea_shader
 	camera.set_shader_input('strength', factor)
 	camera.set_shader_input('time', nausea_time)
+	camera.set_shader_input('pixel_size', 256)
 	print(nausea_time)
 
 def clear_nausea(camera, factor):
-	print('Clearing nausea')
 	camera.shader = fisheye_shader
 	camera.set_shader_input('strength', 0.1)
 	camera.set_shader_input('pixel_size', 256)
