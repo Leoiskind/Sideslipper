@@ -11,6 +11,7 @@ LENGTH		= 100.0  # length of each corridor segment (z)
 CORRIDOR_HEIGHT = WIDTH  # how high the corridor is (y)
 SIDES_Z_0 = -LENGTH/2
 ORIGIN_SIDES = Vec3(0, 0.5 + CORRIDOR_HEIGHT/2, 0)
+SPEED_CHANGE= 0.1	# How long it takes for the speed to change
 
 # -----------------
 # Player (bean) config

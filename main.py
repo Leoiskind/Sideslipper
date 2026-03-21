@@ -18,6 +18,7 @@ import flags
 
 app = Ursina()
 Entity.default_shader = lit_with_shadows_shader
+Text.default_font = 'assets/fonts/Pix32.ttf'
 
 window.title = '4-sided corridor - Ursina base'
 window.borderless = False
@@ -75,7 +76,12 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
+<<<<<<< HEAD
 	bean_color=color.orange, origin=ORIGIN,
+=======
+	bean_color=color.clear,
+	origin=ORIGIN,
+>>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
 	on_shop_callback=to_shop
 	)
 
@@ -106,6 +112,7 @@ for side in sides:
 # fisheye_shader.set_shader_input('strength', 1.0)  # full effect
 camera.shader = fisheye_shader
 camera.set_shader_input('strength', 0.1)
+camera.set_shader_input('pixel_size', 256)
 # camera.shader = None
 camera.origin = ORIGIN
 camera.position = Vec3(.7, 0, 0)
@@ -134,7 +141,8 @@ def trigger_death():
 		shadow.enabled = False
 	print("Player died!")
 	GAME_OVER = True
-	flags.SCROLL_SPEED = 0  # Stop the walls from moving
+	effects[flags.CURRENT_WALL].clear_effect()
+	flags.CURRENT_WALL = 0
 	
 	# Update and show the death screen
 	invoke(show_death_screen, delay=1.0)  # delay in seconds
@@ -146,7 +154,7 @@ def show_death_screen():
 bean.on_death_callback = trigger_death
 
 def restart_game():
-	global GAME_OVER, SCORE, DEFAULT_SCROLL_SPEED
+	global GAME_OVER, SCORE, DEFAULT_SCROLL_SPEED, effects
 	
 	print("Restarting game...")
 	GAME_OVER = False
@@ -170,6 +178,9 @@ def restart_game():
 
 	player.enabled = True
 	death_screen.enabled = False
+
+	# Reset effects
+	effects[flags.CURRENT_WALL].apply_effect()
 	
 
 def toggle_pause():
@@ -186,12 +197,15 @@ def toggle_pause():
 # Define effects as functions that will be continously triggered.
 # Make a list with the effects for walls 0 through 3
 
-def effect_A():
-	flags.CAN_JUMP = False
+def empty_foo():
+	pass
 
-def clear_A():
-	flags.CAN_JUMP = True
+effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
+effect_B = EffectWall(set_nausea, clear_nausea, camera, 0.3)
+effect_C = EffectWall(flip_camera, return_camera, camera)
+effect_D = EffectWall(block_right, release_right)
 
+<<<<<<< HEAD
 def change_speed(speed):
 	flags.SCROLL_SPEED = speed
 
@@ -227,6 +241,9 @@ def clear_D():
 
 effects = [effect_A, effect_B, effects_C, effects_D]
 clear_effects = [clear_A, clear_B, clear_C, clear_D]
+=======
+effects = [effect_B, effect_A, effect_C, effect_D]
+>>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
 
 # -----------------
 # Input & update
@@ -301,13 +318,13 @@ def add_to_score(amount):
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
 last_wall = flags.CURRENT_WALL
+effects[last_wall].apply_effect()
 scroll_phase = 0
 score_multiplier = 1
 def update():
 	global last_wall, shop_was_open
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
-	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE, scroll_phase
-	SCROLL_SPEED = flags.SCROLL_SPEED
+	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE, scroll_phase, nausea_time
 	
 	# LIGHT.look_at(bean)
 	# TEXT.text = str(LIGHT.position)
@@ -321,6 +338,11 @@ def update():
 	
 	SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
 	score_ui.text = f'Score: {int(SCORE)}'
+
+	# Update nausea if neded
+	nausea_time += time.dt
+	if camera.shader.name == 'nausea':
+		camera.set_shader_input('time', nausea_time)
 
 	scroll_speed = 0
 	scroll_phase += flags.SCROLL_SPEED * time.dt
@@ -344,8 +366,8 @@ def update():
 		flags.CURRENT_WALL = int(angle//90)
 
 		if flags.CURRENT_WALL != last_wall:
-			clear_effects[last_wall]()
-			effects[flags.CURRENT_WALL]()
+			effects[last_wall].clear_effect()
+			effects[flags.CURRENT_WALL].apply_effect()
 			last_wall = flags.CURRENT_WALL
 			shop_was_open = False
 
@@ -478,6 +500,5 @@ if __name__ == '__main__':
 		on_click=item_shop.show_shop
 		# on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
 	)
-
 
 	app.run()

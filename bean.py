@@ -82,6 +82,7 @@ class Character(Entity):
 			parent=self,
 			y=-2.2
 		)
+<<<<<<< HEAD
 		self.particles = Particles(
 			Vec3(0, -1.5, 0),
 			self.scale[1],
@@ -102,6 +103,8 @@ class Character(Entity):
 			enabled=True,
 			double_sided=True
 		)
+=======
+>>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
 
 		player_graphics.play_animation('run')
 		ALIVE = True
@@ -142,7 +145,6 @@ class Character(Entity):
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
 					print("Bean killed by", hit.entity)
-					self.particles.play(.3, curve.linear)
 					start_camera_shake(strength=0.2, duration=0.3)
 					self.on_death_callback()
 					if flags.INVINCIBLE:

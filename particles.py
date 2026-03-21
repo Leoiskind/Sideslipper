@@ -15,21 +15,19 @@ class Particles():
 		self.particle_number = particle_number
 		self.particle_size = particle_size
 		self.color = color
-		self.particles = []
 		self.parent=parent
-		for n in range(particle_number):
-			self.particles.append(
-				Entity(
+		self.playable = True
+		self.debug_position = debug_position
+		self.particles = [
+			Entity(
 					model='sphere',
+					parent=self.parent,
 					position=self.position,
 					scale=self.particle_size,
 					color=self.color,
-					enabled=False,
-					parent=self.parent
+					enabled=False
 					)
-			)
-		self.playable = True
-		self.debug_position = debug_position
+			] * particle_number
 		self.debuger_position = Entity(
 			position=self.position,
 			model='sphere',
