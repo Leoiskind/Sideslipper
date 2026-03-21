@@ -18,7 +18,6 @@ class Obstacle(Entity):
 	
 	def update(self):
 		global LENGTH
-		print(flags.SCROLL_SPEED)
 		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		if self.z > 5:
 			destroy(self)
@@ -49,3 +48,5 @@ class StoreObstacle(Obstacle):
 	def __init__(self, z, scale=(CORRIDOR_HEIGHT/4, CORRIDOR_HEIGHT/4), is_obstacle=False, **kwargs):
 		super().__init__((0, CORRIDOR_HEIGHT/8 - CORRIDOR_HEIGHT/2, z), scale, is_obstacle, **kwargs)
 		self.color = color.green
+
+obstacle_list = [LowObstacle, HighObstacle, WallObstacle, MiddleObstacle]

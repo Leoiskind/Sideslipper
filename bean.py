@@ -1,6 +1,6 @@
-from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, scene
+from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, Audio, scene
 from ursina.shaders import lit_with_shadows_shader
-from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE
+from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE, ROLL_TIME, CURVE_ROLL_DOWN, CURVE_ROLL_UP
 import flags
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
@@ -11,6 +11,7 @@ from coin import Coin
 class Character(Entity):
 	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy', on_shop_callback=None):
 		super().__init__()
+		self.death_sound = Audio('death.mp3', autoplay=False, volume=flags.FX_VOLUME)
 		self.model = model
 		self.scale = scale
 		self.position = position
@@ -68,7 +69,7 @@ class Character(Entity):
 			enabled=False
 		)
 		self.shadows = [self.shadow_A, self.shadow_B, self.shadow_C, self.shadow_D]
-		player_graphics = SpriteSheetAnimation(
+		self.player_graphics = SpriteSheetAnimation(
 			'running_guy',
 			tileset_size=(2,2),
 			fps=6,
@@ -80,12 +81,8 @@ class Character(Entity):
 			rotation=(0, 180, 0),
 			scale=(GRAPHICS_SCALE, GRAPHICS_SCALE),
 			parent=self,
-			y=-2.2
+			y=-2.5
 		)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 		self.particles = Particles(
 			Vec3(0, -1.5, 0),
 			self.scale[1],
@@ -106,15 +103,10 @@ class Character(Entity):
 			enabled=True,
 			double_sided=True
 		)
-<<<<<<< HEAD
-=======
->>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
-=======
->>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 
-		player_graphics.play_animation('run')
+		self.player_graphics.play_animation('run')
 		ALIVE = True
-		player_graphics.play_animation('run')
+		self.player_graphics.play_animation('run')
 		self.on_death_callback = None
 
 	def jump(self, height=BEAN_HEIGHT*2, duration=TURN_TIME):
@@ -129,6 +121,31 @@ class Character(Entity):
 			duration=duration/2,
 			delay=duration/2,
 			curve=CURVE_JUMP_DOWN
+		)
+	
+	def roll(self, duration=ROLL_TIME):
+		flags.ROLLING = True
+		self.animate_y(
+			-3/2*BEAN_HEIGHT,
+			duration=duration/2,
+			curve=CURVE_ROLL_DOWN
+		)
+		self.animate_y(
+			0,
+			duration=duration/2,
+			delay=duration/2,
+			curve=CURVE_ROLL_UP
+		)
+		self.animate_scale_y(
+			self.scale_y/2,
+			duration=duration/2,
+			curve=CURVE_ROLL_DOWN
+		)
+		self.animate_scale_y(
+			self.scale_y,
+			duration=duration/2,
+			curve=CURVE_ROLL_DOWN,
+			delay=duration/2
 		)
 
 	
@@ -151,6 +168,7 @@ class Character(Entity):
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
 					print("Bean killed by", hit.entity)
+					self.death_sound.play()
 					start_camera_shake(strength=0.2, duration=0.3)
 					self.on_death_callback()
 					if flags.INVINCIBLE:

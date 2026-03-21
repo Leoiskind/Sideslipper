@@ -47,9 +47,9 @@ void main() {
     col.b *= 0.97 - 0.03 * mask;
 
     // --- vignette ---
-	float vignette = 1.0 - r * 0.7;
-	vignette = clamp(vignette, 0.6, 1.0);
-	col *= vignette;
+	//float vignette = 1.0 - r * 0.7;
+	//vignette = clamp(vignette, 0.6, 1.0);
+	//col *= vignette;
 
     fragColor = vec4(col, 0.5);
 }
