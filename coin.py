@@ -7,7 +7,7 @@ class Coin(Entity):
 		super().__init__(
 			model='sphere',
 			color=color.gold,
-			scale=(0.25,0.25,0.05),
+			scale=(0.3,0.3,0.05),
 			position=position,
 			rotation=(90,0,0),
 			collider='box',
@@ -21,8 +21,18 @@ class Coin(Entity):
 	def update(self):
 		global LENGTH
 		self.rotation_x += 100 * time.dt
-		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		hit_info = self.intersects()
+		if hit_info.hit and hit_info.entity == self.player.magnet:
+			self.magnetized = True
+
+		if getattr(self, 'magnetized', False):
+			self.parent = self.player
+			target_pos = self.player.position + Vec3(0, -2, 10)
+			direction = (target_pos - self.position).normalized()
+			self.position += direction * 20 * time.dt
+			
+		else:
+			self.z += flags.SCROLL_SPEED * LENGTH * time.dt	
 		if hit_info.hit and hit_info.entity == self.player:
 			self.player.coins +=1
 			self.coin_counter.text = f'coins: {self.player.coins}'

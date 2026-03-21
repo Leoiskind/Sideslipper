@@ -26,17 +26,21 @@ class EffectTimer(Entity):
 # --- NEW: The Effects Manager ---
 class EffectsManager:
     # 1. Catch the references passed from main.py
-    def __init__(self, player, coin_counter_ui, score_mult_callback):
+    def __init__(self, player, coin_counter_ui, score_mult_callback, score_callback):
         self.player = player
         self.coin_counter_ui = coin_counter_ui
         self.score_mult_callback = score_mult_callback
+        self.score_callback = score_callback
         self.extra_time = 0
         self.effect_time = {
             'chocolate': 4,
             'pizza': 3,
-            'nachos': 5
+            'nachos': 5,
+            'rice': 0
         }
-        self.effect_uses = {}
+        self.effect_uses = {
+            'pablo': 1
+        }
 
     # 2. Your effects logic, updated to use "self."
     def apply_item_effects(self, item_name):
@@ -59,10 +63,15 @@ class EffectsManager:
 
         elif item_name == 'nachos':
             self.score_mult_callback(.5)
-            EffectTimer('nachos', self.effect_time['nachos'])
+            EffectTimer('nachos', self.effect_time['nachos'] + self.extra_time)
 
             def reset_nachos():
                 self.score_mult_callback(-0.5)
             invoke(reset_nachos, delay=self.effect_time['nachos'] + self.extra_time)
+        elif item_name == 'rice':
+            self.score_callback(100)
+            EffectTimer('rice', self.effect_time['rice'] + self.extra_time)
+        elif item_name == 'pablo':
+            self.effect_uses['pablo'] += 1
         else:
             print(f"You ate {item_name}, but nothing happened.")

@@ -75,7 +75,7 @@ bean = Character(
 	model='sphere',
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
-	bean_color=color.clear, origin=ORIGIN,
+	bean_color=color.orange, origin=ORIGIN,
 	on_shop_callback=to_shop
 	)
 
@@ -123,7 +123,15 @@ SCORE = 0
 def trigger_death():
 	global GAME_OVER, SPEED
 	if GAME_OVER: return # Prevent dying twice!
-
+	if effect_manager.effect_uses['pablo'] > 0:
+		print("PABLO PROTECTS YOU FROM DEATH!")
+		effect_manager.effect_uses['pablo'] -= 1
+		flags.INVINCIBLE = True
+		invoke(setattr, flags, 'INVINCIBLE', False, delay=5)  # Pablo's protection lasts 5 seconds
+		return
+	bean.enabled = False
+	for shadow in bean.shadows:
+		shadow.enabled = False
 	print("Player died!")
 	GAME_OVER = True
 	flags.SCROLL_SPEED = 0  # Stop the walls from moving
@@ -285,6 +293,10 @@ def add_to_score_mult(amount):
 	global score_multiplier
 	score_multiplier += amount
 
+def add_to_score(amount):
+	global SCORE
+	SCORE += amount
+
 
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
@@ -385,7 +397,8 @@ if __name__ == '__main__':
 
 	items = ['nachos', 'fries', 'hash_brown',
 		  'rice', 'chocolate', 'shroom',
-		  'donut', 'croissant', 'pizza']
+		  'donut', 'croissant', 'pizza',
+		  'pablo']
 
 	def add_item():
 		inventory.append(random.choice(items))
@@ -432,7 +445,8 @@ if __name__ == '__main__':
 	effect_manager = EffectsManager(
 		player=player, 
 		coin_counter_ui=coin_counter_ui,
-		score_mult_callback=add_to_score_mult
+		score_mult_callback=add_to_score_mult,
+		score_callback=add_to_score
 	)
 
 	# 3. Tell the inventory to use the manager's logic when items are eaten!

@@ -8,7 +8,7 @@ class Shop(Entity):
 		super().__init__(
 			parent=camera.ui,
 			model='quad',
-			scale=(0.8, 0.25),      # A wide rectangle in the center of the screen
+			scale=(0.8, 0.4),      # A wide rectangle in the center of the screen
 			position=(0, -.20),
 			color=color.dark_gray, # Dark semi-transparent background
 			enabled=False          # Start with the shop hidden
