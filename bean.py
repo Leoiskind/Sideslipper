@@ -1,4 +1,4 @@
-from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve
+from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, scene
 from ursina.shaders import lit_with_shadows_shader
 from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE
 import flags
@@ -6,6 +6,7 @@ from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
 from camera import start_camera_shake
 from particles import Particles
+from coin import Coin
 
 class Character(Entity):
 	def __init__(self, model, scale, position, bean_color, origin, texture='running_guy', on_shop_callback=None):
@@ -81,6 +82,26 @@ class Character(Entity):
 			parent=self,
 			y=-2.2
 		)
+		self.particles = Particles(
+			Vec3(0, -1.5, 0),
+			self.scale[1],
+			particle_size=0.1,
+			debug_position=True,
+			parent=self
+			)
+		
+		self.magnet = Entity(
+			parent=scene,
+			model='quad',
+			scale=(7.5, 5, 2),
+			position=(0, 0, -10),
+			color=color.clear,
+			texture='square',
+			unlit=True,
+			collider='box',
+			enabled=True,
+			double_sided=True
+		)
 
 		player_graphics.play_animation('run')
 		ALIVE = True
@@ -101,19 +122,30 @@ class Character(Entity):
 			curve=CURVE_JUMP_DOWN
 		)
 
+	
+
 	def update(self):
-		hit = self.intersects()
+		hit = self.intersects(ignore=(self, self.magnet))
 		# self.particles.set_position(self.position)
 		# print(self.particles.position)
+		if flags.MAGNET_ACTIVE:
+			self.magnet.enabled = True
+		else:
+			self.magnet.enabled = False
+
+		hit_magnet = self.magnet.intersects(ignore=(self, self.shadow_A, self.shadow_B, self.shadow_C, self.shadow_D, self.particles))
+		if hit_magnet.hit and hit_magnet.entity:
+			print(f"magnet hits {hit_magnet.entity}")
+			if isinstance(hit_magnet.entity, Coin):
+				hit_magnet.entity.speed = 0
 		if hit.hit and hit.entity:
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
 					print("Bean killed by", hit.entity)
 					start_camera_shake(strength=0.2, duration=0.3)
 					self.on_death_callback()
-					self.enabled = False
-					for shadow in self.shadows:
-						shadow.enabled = False
+					if flags.INVINCIBLE:
+						destroy(hit.entity)
 				else:
 					print("Enter store")
 					destroy(hit.entity)
