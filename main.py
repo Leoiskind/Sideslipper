@@ -301,7 +301,7 @@ def update():
 	if GAME_OVER:
 		return
 	
-  generator.update()
+	generator.update()
   
 	SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
 	score_ui.text = f'Score: {int(SCORE)}'
