@@ -8,7 +8,7 @@ class Inventory(Entity):
 			model = 'quad',
 			scale = (.45, .72),
 			origin = (-.5, .5),
-			position = (-.25,.45),
+			position = (.25,.45),
 			texture = 'white_cube',
 			texture_scale = (5,8),
 			color = color.dark_gray,
@@ -91,6 +91,7 @@ class Inventory(Entity):
 		self.enabled = False
 	
 	def show_inventory(self):
+		flags.INVENTORY = True
 		self.enabled = True
 		
 	def find_free_spot(self):
@@ -108,3 +109,9 @@ class Inventory(Entity):
 					self.use_item_callback(c.item_name)
 				
 				destroy(c)
+
+	def update(self):
+		if len(self.item_parent.children) >= 40:
+			flags.INVENTORY_FULL = True
+		else:
+			flags.INVENTORY_FULL = False
