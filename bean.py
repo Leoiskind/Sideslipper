@@ -83,6 +83,9 @@ class Character(Entity):
 			y=-2.2
 		)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 		self.particles = Particles(
 			Vec3(0, -1.5, 0),
 			self.scale[1],
@@ -103,8 +106,11 @@ class Character(Entity):
 			enabled=True,
 			double_sided=True
 		)
+<<<<<<< HEAD
 =======
 >>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
+=======
+>>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 
 		player_graphics.play_animation('run')
 		ALIVE = True

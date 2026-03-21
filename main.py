@@ -77,11 +77,16 @@ bean = Character(
 	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
 	position=Vec3(0, 0, -10),
 <<<<<<< HEAD
+<<<<<<< HEAD
 	bean_color=color.orange, origin=ORIGIN,
 =======
 	bean_color=color.clear,
 	origin=ORIGIN,
 >>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
+=======
+	bean_color=color.clear,
+	origin=ORIGIN,
+>>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 	on_shop_callback=to_shop
 	)
 
@@ -197,15 +202,16 @@ def toggle_pause():
 # Define effects as functions that will be continously triggered.
 # Make a list with the effects for walls 0 through 3
 
-def empty_foo():
-	pass
+def effect_A():
+	flags.CAN_JUMP = False
 
-effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
-effect_B = EffectWall(set_nausea, clear_nausea, camera, 0.3)
-effect_C = EffectWall(flip_camera, return_camera, camera)
-effect_D = EffectWall(block_right, release_right)
+def clear_A():
+	flags.CAN_JUMP = True
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 def change_speed(speed):
 	flags.SCROLL_SPEED = speed
 
@@ -226,10 +232,15 @@ def clear_B():
 	for i in range(n_steps):
 		invoke(change_speed, flags.SCROLL_SPEED - i*5/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*duration)
 	bean.animate_z(bean.z - 1, duration=duration, curve=curve.linear)	
+def empty_foo():
+	pass
 
-def effects_C():
-	flags.CAN_LEFT = False
+effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
+effect_B = EffectWall(set_nausea, clear_nausea, camera, 0.3)
+effect_C = EffectWall(flip_camera, return_camera, camera)
+effect_D = EffectWall(block_right, release_right)
 
+<<<<<<< HEAD
 def clear_C():
 	flags.CAN_LEFT = True
 
@@ -244,6 +255,9 @@ clear_effects = [clear_A, clear_B, clear_C, clear_D]
 =======
 effects = [effect_B, effect_A, effect_C, effect_D]
 >>>>>>> eeb4dafad62461812ff018e0e6e493c8b9b86d1b
+=======
+effects = [effect_B, effect_A, effect_C, effect_D]
+>>>>>>> 22f249e61376577abffa3deaf508af14cc3d0dfa
 
 # -----------------
 # Input & update
