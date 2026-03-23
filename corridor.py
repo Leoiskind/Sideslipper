@@ -84,6 +84,7 @@ def release_jump():
 
 def flip_camera(camera):
 	global camera_base_rot
+	print("Flip camera")
 	camera_base_rot[2] += 180
 
 def return_camera(camera):
