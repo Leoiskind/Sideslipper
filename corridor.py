@@ -40,9 +40,14 @@ class EffectWall():
 		self.args = args
 
 	def apply_effect(self):
+		if flags.APPLE_MODE:
+			print("Apple mode active - skipping effect application!")
+			return
 		self.apply(*self.args)
 
 	def clear_effect(self):
+		if flags.APPLE_MODE:
+			return
 		self.clear(*self.args)
 
 # Possible effects
