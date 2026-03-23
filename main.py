@@ -248,6 +248,13 @@ def add_to_score(amount):
 	global SCORE
 	SCORE += amount
 
+def add_effect_back():
+	# This is called by the Effects Manager when the apple effect expires, to reset all effects immediately
+	effects[flags.CURRENT_WALL].clear_effect()
+	effects[flags.CURRENT_WALL].apply_effect()
+
+def clear_effect():
+	effects[flags.CURRENT_WALL].clear_effect()
 
 TEXT = Text('', origin=(0, -0.45), scale=1.5)
 
@@ -265,6 +272,11 @@ def update():
 
 	if not flags.STORE and not GAME_OVER:
 		bean.enabled = True
+
+	if flags.MAGNET_ACTIVE:
+		bean.magnet.enabled = True
+	else:
+		bean.magnet.enabled = False
 
 	update_camera_shake(camera)
 	if GAME_OVER:
@@ -358,7 +370,7 @@ if __name__ == '__main__':
 	items = ['nachos', 'fries', 'hash_brown',
 		  'rice', 'chocolate', 'shroom',
 		  'donut', 'croissant', 'pizza',
-		  'pablo']
+		  'pablo', 'apple']
 
 	def add_item():
 		inventory.append(random.choice(items))
@@ -407,7 +419,9 @@ if __name__ == '__main__':
 		player=player, 
 		coin_counter_ui=coin_counter_ui,
 		score_mult_callback=add_to_score_mult,
-		score_callback=add_to_score
+		score_callback=add_to_score,
+		add_effect_back_callback=add_effect_back,
+		lose_effects_callback=clear_effect
 	)
 
 	# 3. Tell the inventory to use the manager's logic when items are eaten!

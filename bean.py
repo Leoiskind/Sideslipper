@@ -100,18 +100,16 @@ class Character(Entity):
 			debug_position=True,
 			parent=self
 			)
-		
 		self.magnet = Entity(
 			parent=scene,
-			model='quad',
-			scale=(7.5, 5, 2),
-			position=(0, 0, -10),
-			color=color.clear,
-			texture='square',
+			model='cube',
+			scale=(2.8, 2.8, 5),
+			position = (0, 0, -15),
 			unlit=True,
 			collider='box',
-			enabled=True,
-			double_sided=True
+			enabled=False,
+			color=color.clear
+		
 		)
 
 		self.player_graphics.play_animation('run')
@@ -162,6 +160,7 @@ class Character(Entity):
 		hit = self.intersects(ignore=(self, self.magnet))
 		# self.particles.set_position(self.position)
 		# print(self.particles.position)
+<<<<<<< HEAD
 		if flags.MAGNET_ACTIVE:
 			self.magnet.enabled = True
 		else:
@@ -171,6 +170,8 @@ class Character(Entity):
 		if hit_magnet.hit and hit_magnet.entity:
 			if isinstance(hit_magnet.entity, Coin):
 				hit_magnet.entity.speed = 0
+=======
+>>>>>>> Leo
 		if hit.hit and hit.entity:
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
