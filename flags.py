@@ -15,3 +15,6 @@ INVENTORY_FULL = False
 INVINCIBLE = False
 MAGNET_ACTIVE = False
 APPLE_MODE = False
+
+# Camera
+SHAKING		= False

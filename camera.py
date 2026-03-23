@@ -1,4 +1,4 @@
-from ursina import Shader, Vec3, time, random
+from ursina import Shader, Vec3, time, random, invoke
 import flags
 from config import DEFAULT_STRENGTH_SHADER
 
@@ -45,28 +45,52 @@ def start_camera_shake(strength=0.15, duration=0.2):
 
 def update_camera_shake(camera):
 	global shake_timer, camera_base_rot, camera_base_pos, DEFAULT_STRENGTH_SHADER
+	print(camera.rotation)
     
 	camera.set_shader_input('strength', DEFAULT_STRENGTH_SHADER*flags.SCROLL_SPEED*10)
 
-	if shake_timer > 0:
-		shake_timer -= time.dt
+	if shake_timer > 0 and not flags.SHAKING:
+		flags.SHAKING = True
+		shakes = int(shake_timer / time.dt)
+		cam_pos0 = camera.position
+		cam_rot0 = camera.rotation
+		for shake in range(shakes):
+			current_strength  = (shakes - shake) * time.dt
+			offset = Vec3(
+				random.uniform(-current_strength, current_strength),
+				random.uniform(-current_strength, current_strength),
+				random.uniform(-current_strength, current_strength),
+			)
+			rot_offset = Vec3(
+				random.uniform(-current_strength * 5, current_strength * 5),
+				random.uniform(-current_strength * 5, current_strength * 5),
+				random.uniform(-current_strength * 5, current_strength * 5),
+			)
+			invoke(camera.position_setter, camera.position+offset, delay=time.dt*shake)
+			invoke(camera.rotation_setter, camera.rotation+rot_offset, delay=time.dt*shake)
+		invoke(camera.position_setter, cam_pos0, delay=time.dt*(shake+1))
+		invoke(camera.rotation_setter, cam_rot0, delay=time.dt*(shake+1))
+		invoke(setattr, flags, 'SHAKING', False, delay=time.dt*(shake*1))
+		shake_timer = 0
 
-		t = max(shake_timer, 0) / shake_duration
-		current_strength = shake_strength * t
+		# shake_timer -= time.dt
 
-		offset = Vec3(
-			random.uniform(-current_strength, current_strength),
-			random.uniform(-current_strength, current_strength),
-			random.uniform(-current_strength, current_strength),
-		)
-		camera.position = camera_base_pos + offset
+		# t = max(shake_timer, 0) / shake_duration
+		# current_strength = shake_strength * t
 
-		rot_offset = Vec3(
-			random.uniform(-current_strength * 5, current_strength * 5),
-			random.uniform(-current_strength * 5, current_strength * 5),
-			random.uniform(-current_strength * 5, current_strength * 5),
-		)
-		camera.rotation = camera_base_rot + rot_offset
-	else:
-		camera.position = camera_base_pos
-		camera.rotation = camera_base_rot
+		# offset = Vec3(
+		# 	random.uniform(-current_strength, current_strength),
+		# 	random.uniform(-current_strength, current_strength),
+		# 	random.uniform(-current_strength, current_strength),
+		# )
+		# camera.position = camera_base_pos + offset
+
+		# rot_offset = Vec3(
+		# 	random.uniform(-current_strength * 5, current_strength * 5),
+		# 	random.uniform(-current_strength * 5, current_strength * 5),
+		# 	random.uniform(-current_strength * 5, current_strength * 5),
+		# )
+		# camera.rotation = camera_base_rot + rot_offset
+	# else:
+	# 	camera.position = camera_base_pos
+	# 	camera.rotation = camera_base_rot

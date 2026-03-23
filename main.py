@@ -84,8 +84,8 @@ camera.shader = fisheye_shader
 camera.set_shader_input('strength', 0.1)
 camera.set_shader_input('pixel_size', 256)
 camera.origin = ORIGIN
-camera.position = Vec3(.7, 0, 0)
-camera.rotation = Vec3(7, 190, 0)
+camera.position = CAM_BASE_POS
+camera.rotation = CAM_BASE_ROT
 camera.fov = FOV
 
 def get_last_z(sides_list):
@@ -184,9 +184,6 @@ def input(key):
 	if key=='p':
 		toggle_pause()
 
-	if key=='k':
-		trigger_death()
-
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		flags.ROTATING = False
 	if bean.y == 0:
@@ -231,14 +228,14 @@ def input(key):
 		application.quit()
 	
 	speed = 100 * time.dt
-	if held_keys['i']: camera_base_pos += camera.forward*speed
-	if held_keys['k']: camera_base_pos += camera.back*speed
-	if held_keys['j']: camera_base_pos += camera.left*speed
-	if held_keys['l']: camera_base_pos += camera.right*speed
-	if held_keys['u']: camera_base_rot[1] -= speed
-	if held_keys['o']: camera_base_rot[1] += speed
-	if held_keys['n']: camera_base_pos[1] -= speed
-	if held_keys['m']: camera_base_pos[1] += speed
+	if held_keys['i']: camera.position += camera.forward*speed
+	if held_keys['k']: camera.position += camera.back*speed
+	if held_keys['j']: camera.position += camera.left*speed
+	if held_keys['l']: camera.position += camera.right*speed
+	if held_keys['u']: camera.rotation[1] -= speed
+	if held_keys['o']: camera.rotation[1] += speed
+	if held_keys['n']: camera.position[1] -= speed
+	if held_keys['m']: camera.position[1] += speed
 
 def add_to_score_mult(amount):
 	global score_multiplier
