@@ -150,18 +150,6 @@ def restart_game():
 
 	# Reset effects
 	effects[flags.CURRENT_WALL].apply_effect()
-	
-
-def toggle_pause():
-	# Don't allow pausing if the player is already dead!
-	if GAME_OVER: 
-		return 
-
-	# Flip the built-in Ursina pause state
-	application.paused = not application.paused
-	
-	# Turn the visual pause screen on or off to match
-	pause_screen.enabled = application.paused
 
 # Define effects as functions that will be continously triggered.
 # Make a list with the effects for walls 0 through 3
@@ -181,11 +169,6 @@ def input(key):
 	global camera_base_pos, camera_base_rot
 	print(key)
 	global ROTATING, JUMPING
-	if key=='p':
-		toggle_pause()
-
-	if key=='k':
-		trigger_death()
 
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		flags.ROTATING = False
@@ -453,5 +436,16 @@ if __name__ == '__main__':
 		on_click=item_shop.show_shop
 		# on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
 	)
+
+
+	start_screen = Entity(parent=camera.ui, z=-2)
+	Entity(parent=start_screen, model='quad', scale=(2, 2), color=color.rgba(0, 0, 0, 200))
+
+	def begin_game():
+		start_screen.enabled=False
+		application.paused=False
+
+	Button(parent=start_screen, text='START', scale = (0.3, 0.1), color=color.azure, on_click=begin_game)
+	application.paused=True
 
 	app.run()
