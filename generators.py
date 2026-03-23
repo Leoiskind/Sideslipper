@@ -1,7 +1,7 @@
 from ursina import Entity, Vec3, random, time
 from config import LENGTH, CORRIDOR_HEIGHT, WIDTH, SIDES_Z_0, COIN_POSITIONS, COIN_SPACING, OBSTACLE_SPACING
 import flags
-from obstacles import Obstacle, obstacle_list
+from obstacles import MiddleObstacle, obstacle_list
 from coin import Coin
 
 class Generator(Entity):
@@ -37,7 +37,7 @@ class Generator(Entity):
         self.margin = 0.15
 
     def update(self):
-        speed = getattr(flags, 'SCROLL_SPEED', 0)*LENGTH
+        speed = flags.SCROLL_SPEED*LENGTH
 
         if speed <= 0:
             return
@@ -79,16 +79,16 @@ class Generator(Entity):
         wall = random.choice(self.wall_choices)
 
         if wall == 'A':   # floor
-            pos = Vec3(0, -CORRIDOR_HEIGHT/2 + self.margin, 0)
+            pos = Vec3(0, 0.5-CORRIDOR_HEIGHT/2, 0)
             rot = Vec3(0, 0, 0)
         elif wall == 'B': # right wall
-            pos = Vec3(WIDTH/2 - self.margin, 0, 0)
+            pos = Vec3(0.5-CORRIDOR_HEIGHT/2, 0, 0)
             rot = Vec3(0, 0, 90)
         elif wall == 'C': # left wall
-            pos = Vec3(-WIDTH/2 + self.margin, 0, 0)
+            pos = Vec3(-0.5+CORRIDOR_HEIGHT/2, 0, 0)
             rot = Vec3(0, 0, -90)
         else:             # ceiling
-            pos = Vec3(0, CORRIDOR_HEIGHT/2 - self.margin, 0)
+            pos = Vec3(0, -0.5+CORRIDOR_HEIGHT/2, 0)
             rot = Vec3(0, 0, 180)
 
         return wall, pos, rot
@@ -100,9 +100,10 @@ class Generator(Entity):
         wall, local_pos, local_rot = self.random_wall_point()
 
         self.obstacle_factory(
-            -20,
-            self.random_wall_point()[2],
-            self.coin_parent
+            -100,
+            random.randint(0, 3),
+            self.coin_parent,
+			local_pos
 			)
 
         self.next_spawn_segment += 1
@@ -120,9 +121,9 @@ class Generator(Entity):
             coin_counter=self.coin_counter
         )
 
-def create_obstacle(z, rot, coin_parent):
-    return random.choice(obstacle_list)(z=z, rotation=rot, parent=coin_parent)
+def create_obstacle(z, wall, coin_parent, position):
+    print("Creating obstacle")
+    return random.choice(obstacle_list)(wall, position=Vec3(0, 0, z), parent=coin_parent)
 
 def create_coin(position, player, coin_parent, coin_counter):
-    print("Creating coin")
     return Coin(position=position, player=player, parent=coin_parent, coin_counter=coin_counter)

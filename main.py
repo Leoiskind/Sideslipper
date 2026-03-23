@@ -99,6 +99,7 @@ SCORE = 0
 def trigger_death():
 	global GAME_OVER, SPEED
 	if GAME_OVER: return # Prevent dying twice!
+	effects[flags.CURRENT_WALL].clear_effect()
 	if effect_manager.effect_uses['pablo'] > 0:
 		print("PABLO PROTECTS YOU FROM DEATH!")
 		effect_manager.effect_uses['pablo'] -= 1
@@ -110,7 +111,6 @@ def trigger_death():
 		shadow.enabled = False
 	print("Player died!")
 	GAME_OVER = True
-	effects[flags.CURRENT_WALL].clear_effect()
 	flags.CURRENT_WALL = 0
 	
 	# Update and show the death screen
@@ -165,36 +165,6 @@ def toggle_pause():
 
 # Define effects as functions that will be continously triggered.
 # Make a list with the effects for walls 0 through 3
-
-def effect_A():
-	flags.CAN_JUMP = False
-
-def clear_A():
-	flags.CAN_JUMP = True
-
-def change_speed(speed):
-	flags.SCROLL_SPEED = speed
-
-def effect_B():
-	print("increased speed")
-	global DEFAULT_SCROLL_SPEED, bean
-	n_steps = 10
-	duration = .1
-	for i in range(n_steps):
-		invoke(change_speed, flags.SCROLL_SPEED + i*5/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*duration)
-	bean.animate_z(bean.z + 1, duration=duration, curve=curve.linear)	
-
-def clear_B():
-	print("reduced speed")
-	global DEFAULT_SCROLL_SPEED, bean
-	n_steps = 10
-	duration = .1
-	for i in range(n_steps):
-		invoke(change_speed, flags.SCROLL_SPEED - i*5/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*duration)
-	bean.animate_z(bean.z - 1, duration=duration, curve=curve.linear)	
-def empty_foo():
-	pass
-
 effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
 effect_B = EffectWall(set_nausea, clear_nausea, camera, .3)
 effect_C = EffectWall(flip_camera, return_camera, camera)
@@ -367,12 +337,14 @@ def update():
 		angles = [angle_A, angle_B, angle_C, angle_D]
 
 		for i, shadow in enumerate(bean.shadows):
+			if bean.y > 0:
+				shadow.color = color.rgba(0, 0, 0, SHADOW_ALPHA/(1+8*bean.y**2))
+				shadow.scale = (BEAN_HEIGHT/(1+bean.y), BEAN_HEIGHT/(1+bean.y))
 			L = CORRIDOR_HEIGHT/(2*math.cos(math.radians(angles[i]))) + 0.0001
 			shadow.world_position = Vec3(bean.world_x, -L+.01, bean.world_z)
 	else:
 		for shadow in bean.shadows:
 			shadow.enabled = False
-
 
 # -----------------
 # Start

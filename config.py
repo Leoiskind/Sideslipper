@@ -25,6 +25,7 @@ GRAPHICS_SCALE = 2  # scale for the player graphics (running animation)
 ROLL_TIME	= .5
 CURVE_ROLL_DOWN= curve.linear
 CURVE_ROLL_UP= curve.linear
+SHADOW_ALPHA=.3
 
 # -----------------
 # Camera config
@@ -62,4 +63,4 @@ COIN_RARITY = 1
 # -----------------
 # Obstacles
 # -----------------
-OBSTACLE_SPACING= 20
+OBSTACLE_SPACING= 100

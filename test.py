@@ -56,9 +56,9 @@ cube = Entity(
 	scale=.5,
     y=0,
     z=-5,
-    color=color.red,
-    shader=lit_with_shadows_shader,
     shadow=True,
+	transparent=True,
+	color=color.rgba(255, 0, 0, .1)
 )
 
 particles = Particles(
