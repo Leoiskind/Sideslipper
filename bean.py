@@ -1,6 +1,6 @@
 from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, Audio, scene
 from ursina.shaders import lit_with_shadows_shader
-from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE, ROLL_TIME, CURVE_ROLL_DOWN, CURVE_ROLL_UP
+from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE, ROLL_TIME, CURVE_ROLL_DOWN, CURVE_ROLL_UP, SHADOW_ALPHA
 import flags
 from ursina.prefabs.sprite_sheet_animation import SpriteSheetAnimation
 from obstacles import Obstacle
@@ -18,6 +18,15 @@ class Character(Entity):
 		self.color = bean_color
 		self.origin = origin
 		self.collider = 'box'
+		self.collider_visible = Entity(
+									parent=self,
+									model='cube',
+									scale=(1, 1),
+									position=self.collider.center,
+									color=color.rgba(255, 0, 0, 80),
+									wireframe=True,
+									unlit=True
+								)
 		self.shadow = True
 		self.shader = lit_with_shadows_shader
 		self.shadow_A = Entity(
@@ -26,7 +35,8 @@ class Character(Entity):
 			scale=(BEAN_HEIGHT, BEAN_HEIGHT),
 			position=Vec3(0, -CORRIDOR_HEIGHT/2+0.0001, -10),
 			rotation=Vec3(90, 0, 0),
-			color=color.black,
+			color=color.rgba(0, 0, 0, .1),
+			transparent=True,
 			double_sided=True,
 			texture='circle',
 			unlit_entity=True,
@@ -38,7 +48,7 @@ class Character(Entity):
 			scale=(BEAN_HEIGHT, BEAN_HEIGHT),
 			position=Vec3(-CORRIDOR_HEIGHT/2+0.0001, 0, -10),
 			rotation=Vec3(0, 90, 0),
-			color=color.black,
+			color=color.rgba(0, 0, 0, SHADOW_ALPHA),
 			double_sided=True,
 			texture='circle',
 			unlit_entity=True,
@@ -50,7 +60,7 @@ class Character(Entity):
 			scale=(BEAN_HEIGHT, BEAN_HEIGHT),
 			position=Vec3(CORRIDOR_HEIGHT/2-0.0001, 0, -10),
 			rotation=Vec3(0, 90, 0),
-			color=color.black,
+			color=color.rgba(0, 0, 0, SHADOW_ALPHA),
 			double_sided=True,
 			texture='circle',
 			unlit_entity=True,
@@ -62,7 +72,7 @@ class Character(Entity):
 			scale=(BEAN_HEIGHT, BEAN_HEIGHT),
 			position=Vec3(0, CORRIDOR_HEIGHT/2-0.0001, -10),
 			rotation=Vec3(90, 0, 0),
-			color=color.black,
+			color=color.rgba(0, 0, 0, SHADOW_ALPHA),
 			double_sided=True,
 			texture='circle',
 			unlit_entity=True,
@@ -146,8 +156,6 @@ class Character(Entity):
 			delay=duration/2
 		)
 
-	
-
 	def update(self):
 		hit = self.intersects(ignore=(self, self.magnet))
 		# self.particles.set_position(self.position)
@@ -155,14 +163,12 @@ class Character(Entity):
 		if hit.hit and hit.entity:
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
-					print("Bean killed by", hit.entity)
 					self.death_sound.play()
 					start_camera_shake(strength=0.2, duration=0.3)
 					self.on_death_callback()
 					if flags.INVINCIBLE:
 						destroy(hit.entity)
 				else:
-					print("Enter store")
 					destroy(hit.entity)
 					self.on_shop_callback()
 					flags.SCROLL_SPEED = 0

@@ -45,7 +45,7 @@ def start_camera_shake(strength=0.15, duration=0.2):
 
 def update_camera_shake(camera):
 	global shake_timer, camera_base_rot, camera_base_pos, DEFAULT_STRENGTH_SHADER
-      
+    
 	camera.set_shader_input('strength', DEFAULT_STRENGTH_SHADER*flags.SCROLL_SPEED*10)
 
 	if shake_timer > 0:
