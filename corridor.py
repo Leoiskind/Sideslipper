@@ -84,7 +84,6 @@ def release_jump():
 
 def flip_camera(camera):
 	global camera_base_rot
-	print("Flip camera")
 	camera_base_rot[2] += 180
 
 def return_camera(camera):
@@ -99,7 +98,6 @@ def set_nausea(camera, factor):
 	camera.set_shader_input('strength', factor)
 	camera.set_shader_input('time', nausea_time)
 	camera.set_shader_input('pixel_size', 256)
-	print(nausea_time)
 
 def clear_nausea(camera, factor):
 	camera.shader = fisheye_shader

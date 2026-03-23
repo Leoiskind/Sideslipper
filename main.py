@@ -99,13 +99,13 @@ SCORE = 0
 def trigger_death():
 	global GAME_OVER, SPEED
 	if GAME_OVER: return # Prevent dying twice!
-	effects[flags.CURRENT_WALL].clear_effect()
 	if effect_manager.effect_uses['pablo'] > 0:
 		print("PABLO PROTECTS YOU FROM DEATH!")
 		effect_manager.effect_uses['pablo'] -= 1
 		flags.INVINCIBLE = True
 		invoke(setattr, flags, 'INVINCIBLE', False, delay=5)  # Pablo's protection lasts 5 seconds
 		return
+	effects[flags.CURRENT_WALL].clear_effect()
 	bean.enabled = False
 	for shadow in bean.shadows:
 		shadow.enabled = False
@@ -180,7 +180,6 @@ def input(key):
 	"""Keyboard controls for switching attachment (visual only)."""
 	global camera_base_pos, camera_base_rot
 	print(key)
-	print(flags.CAN_JUMP)
 	global ROTATING, JUMPING
 	if key=='p':
 		toggle_pause()

@@ -54,7 +54,6 @@ class EffectsManager:
 
         elif item_name == 'pizza':
             flags.SCROLL_SPEED -= 0.2 * DEFAULT_SCROLL_SPEED
-            print(flags.SCROLL_SPEED)
             EffectTimer('pizza', 3) 
             
             def reset_pizza():

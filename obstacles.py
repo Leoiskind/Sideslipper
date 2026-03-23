@@ -21,8 +21,6 @@ class Obstacle(Entity):
 		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		if self.z > 5:
 			destroy(self)
-		if hit.hit:
-			print("Obstacle hit:", hit.entities)
 
 class LowObstacle(Obstacle):
 	def __init__(self, wall, scale=(CORRIDOR_HEIGHT, 0.5, 0.5), **kwargs):

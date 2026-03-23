@@ -122,7 +122,6 @@ class Generator(Entity):
         )
 
 def create_obstacle(z, wall, coin_parent, position):
-    print("Creating obstacle")
     return random.choice(obstacle_list)(wall, position=Vec3(0, 0, z), parent=coin_parent)
 
 def create_coin(position, player, coin_parent, coin_counter):
