@@ -1,1 +1,1 @@
-gener
+print
