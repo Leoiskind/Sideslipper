@@ -16,29 +16,31 @@ class Coin(Entity):
 		self.sound = Audio('coin.mp3', autoplay=False, volume=flags.FX_VOLUME)
 		self.player=player
 		self.coin_counter = coin_counter
-		self.speed=flags.SCROLL_SPEED * LENGTH
+		self.magnetized = False
 	
 	def update(self):
 		global LENGTH
 		self.rotation_x += 100 * time.dt
+		target_pos = self.player.world_position + Vec3(0, -1.25, 0)
 		hit_info = self.intersects()
-		if hit_info.hit and hit_info.entity == self.player.magnet:
-			self.magnetized = True
 
-		if getattr(self, 'magnetized', False):
-			self.parent = self.player
-			target_pos = self.player.position + Vec3(0, -2, 10)
-			direction = (target_pos - self.position).normalized()
-			self.position += direction * 20 * time.dt
-			
+		if not self.magnetized:
+			if flags.MAGNET_ACTIVE and hit_info.hit and hit_info.entity == self.player.magnet:
+				self.magnetized = True
+
+		if self.magnetized:
+			direction = (target_pos - self.world_position).normalized()
+			self.world_position += direction * 30 * time.dt
 		else:
-			self.z += flags.SCROLL_SPEED * LENGTH * time.dt	
+			self.z += flags.SCROLL_SPEED * LENGTH * time.dt
+		
 		if hit_info.hit and hit_info.entity == self.player:
 			self.player.coins +=1
 			self.coin_counter.text = f'coins: {self.player.coins}'
 			self.sound.play()
 			destroy(self)
 			return
+		
 		if self.z>5:
 			destroy(self)
 			return

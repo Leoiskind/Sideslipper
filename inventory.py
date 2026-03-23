@@ -102,11 +102,12 @@ class Inventory(Entity):
 					return(x, -y)
 	
 	def consume_mouth_items(self):
-		for c in list(self.item_parent.children):
-			if c.y == -9 and c.x in [1, 2, 3]:
-				print(f"Eating {c.item_name}!")
-				if self.use_item_callback is not None:
-					self.use_item_callback(c.item_name)
+		mouth_items = [c for c in list(self.item_parent.children) if c.y == -9 and c.x in [1, 2, 3]]
+		mouth_items.sort(key=lambda c: c.item_name == 'fries', reverse=True) # if fries are in there, eat them last!
+		for c in mouth_items:
+			print(f"Eating {c.item_name}!")
+			if self.use_item_callback is not None:
+				self.use_item_callback(c.item_name)
 				
 				destroy(c)
 
