@@ -45,7 +45,6 @@ def start_camera_shake(strength=0.15, duration=0.2):
 
 def update_camera_shake(camera):
 	global shake_timer, camera_base_rot, camera_base_pos, DEFAULT_STRENGTH_SHADER
-	print(camera.rotation)
     
 	camera.set_shader_input('strength', DEFAULT_STRENGTH_SHADER*flags.SCROLL_SPEED*10)
 
@@ -55,7 +54,7 @@ def update_camera_shake(camera):
 		cam_pos0 = camera.position
 		cam_rot0 = camera.rotation
 		for shake in range(shakes):
-			current_strength  = (shakes - shake) * time.dt
+			current_strength  = shake_strength * (shakes - shake) / shake_duration * time.dt
 			offset = Vec3(
 				random.uniform(-current_strength, current_strength),
 				random.uniform(-current_strength, current_strength),
@@ -70,7 +69,7 @@ def update_camera_shake(camera):
 			invoke(camera.rotation_setter, camera.rotation+rot_offset, delay=time.dt*shake)
 		invoke(camera.position_setter, cam_pos0, delay=time.dt*(shake+1))
 		invoke(camera.rotation_setter, cam_rot0, delay=time.dt*(shake+1))
-		invoke(setattr, flags, 'SHAKING', False, delay=time.dt*(shake*1))
+		invoke(setattr, flags, 'SHAKING', False, delay=time.dt*(shake+2))
 		shake_timer = 0
 
 		# shake_timer -= time.dt
