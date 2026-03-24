@@ -163,6 +163,17 @@ class Character(Entity):
 		self.particles.set_position(self.position - self.origin/2)
 		# self.particles.set_position(self.position)
 		# print(self.particles.position)
+
+		if flags.MAGNET_ACTIVE:
+			self.magnet.enabled = True
+		else:
+			self.magnet.enabled = False
+
+		hit_magnet = self.magnet.intersects(ignore=(self, self.shadow_A, self.shadow_B, self.shadow_C, self.shadow_D, self.particles))
+		if hit_magnet.hit and hit_magnet.entity:
+			if isinstance(hit_magnet.entity, Coin):
+				hit_magnet.entity.speed = 0
+
 		if hit.hit and hit.entity:
 			if isinstance(hit.entity, Obstacle):
 				if getattr(hit.entity, 'is_obstacle', True):
