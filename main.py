@@ -35,7 +35,8 @@ def to_shop():
 	cam.camera_base_pos = Vec3(-10, 10, 0)
 	cam.camera_base_rot = Vec3(0, 0, 0)
 	update_camera_shake(camera)
-	item_shop.enabled = True
+	item_shop.randomize_catalog()
+	item_shop.setup_ui()
 	item_shop.show_shop()
 	inventory.show_inventory()
 
@@ -265,10 +266,10 @@ def update():
 	if GAME_OVER:
 		return
 	
-	generator.update()
-  
-	SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
-	score_ui.text = f'Score: {int(SCORE)}'
+	if not getattr(flags, 'MAIN_MENU', False):
+		generator.update()
+		SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
+		score_ui.text = f'Score: {int(SCORE)}'
 
 	# Update nausea if neded
 	nausea_time += time.dt
@@ -358,9 +359,6 @@ if __name__ == '__main__':
 	def add_item():
 		inventory.append(random.choice(items))
 
-	for item in items:
-		inventory.append(item)
-
 	add_item_button = Button(
 		scale = (.1,.1),
 		x=-.5,
@@ -380,18 +378,17 @@ if __name__ == '__main__':
 		on_click=inventory.show_inventory
 	)
 
+	inventory.append('hash_brown')
+
 	# 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
 	generator = Generator(create_obstacle, create_coin, player=bean, coin_parent=rotation_pivot, coin_counter=coin_counter_ui, spawn_ahead_segments=1)
 	generator.parent = scene
+	generator.enabled = False
 	# --- ADD THIS: Initialize the Shop ---
 	# Pass the player, the inventory, and the UI text so the shop can edit them!
-	catalog={
-		'nachos': 2,
-		'rice'  : 5,
-		'hash_brown': 10
-	}
-	item_shop = Shop(player=player, inventory=inventory, coin_counter_ui=coin_counter_ui, catalog=catalog)
+	
+	item_shop = Shop(player=player, inventory=inventory, coin_counter_ui=coin_counter_ui)
 
 	#------
 	# Manages effects
@@ -439,13 +436,42 @@ if __name__ == '__main__':
 
 
 	start_screen = Entity(parent=camera.ui, z=-2)
-	Entity(parent=start_screen, model='quad', scale=(2, 2), color=color.rgba(0, 0, 0, 200))
+
+	def lose_start_screen():
+		start_screen.enabled = False
 
 	def begin_game():
-		start_screen.enabled=False
-		application.paused=False
+		print("Starting game...")
+		start_button.animate_y(-1, duration=1.5, curve=curve.out_bounce)
+		print("already disabling button")
+		invoke(lose_start_screen, delay=1.5)
+		flags.MAIN_MENU = False
+		generator.enabled = True
 
-	Button(parent=start_screen, text='START', scale = (0.3, 0.1), color=color.azure, on_click=begin_game)
-	application.paused=True
+	start_button = Button(parent=start_screen, text='START',
+					    scale = (0.3, 0.1),
+						color=color.clear,
+						on_click=begin_game,
+						position=(0, 3, -3))
+	button_anim = SpriteSheetAnimation(
+		'start_button',
+		tileset_size=(4, 1),
+		animations={
+			'idle': ((0, 0), (1, 0)),
+			'hover': ((2, 0), (3, 0))
+		},
+		unlit=True,
+		double_sided=True,
+		parent=start_button,
+		z=-1,
+		position=(.125, -.1),
+		collider=None,
+		scale=(2, 3)
+	)
+	
+	start_button.animate_y(0, duration=1.5, curve=curve.out_bounce)
+	start_button.on_mouse_enter = lambda: button_anim.play_animation('hover')
+	start_button.on_mouse_exit = lambda: button_anim.play_animation('idle')
+	StoreObstacle(z=-50, parent=rotation_pivot, wall =1)
 
 	app.run()
