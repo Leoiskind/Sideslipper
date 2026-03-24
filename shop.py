@@ -146,8 +146,6 @@ class Shop(Entity):
 	def hide_shop(self):
 		global DEFAULT_SCROLL_SPEED, CAM_BASE_POS, CAM_BASE_ROT
 		application.paused = False
-		cam.camera_base_pos = CAM_BASE_POS
-		cam.camera_base_rot = CAM_BASE_ROT
 		flags.STORE = False
 		flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
 		flags.INVENTORY = False

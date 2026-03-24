@@ -1,7 +1,8 @@
 from ursina import Entity, color, Vec3, invoke, curve
 from ursina.shaders import lit_with_shadows_shader
-from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SPEED_CHANGE, DEFAULT_SCROLL_SPEED
+from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SPEED_CHANGE, DEFAULT_SCROLL_SPEED, CAM_BASE_ROT
 import flags
+import camera
 from camera import nausea_shader, fisheye_shader, camera_base_pos, camera_base_rot
 
 class CorridorSegment(Entity):
@@ -89,11 +90,13 @@ def release_jump():
 
 def flip_camera(camera):
 	global camera_base_rot
-	camera_base_rot[2] += 180
+	print(CAM_BASE_ROT)
+	camera.camera_base_rot = CAM_BASE_ROT + Vec3(0, 0, 180)
+	print(camera.camera_base_rot)
 
 def return_camera(camera):
 	global camera_base_rot
-	camera_base_rot[2] += 180
+	camera.camera_base_rot = CAM_BASE_ROT
 
 nausea_time = 0
 
