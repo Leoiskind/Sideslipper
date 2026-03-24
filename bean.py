@@ -159,7 +159,7 @@ class Character(Entity):
 
 	def update(self):
 		hit = self.intersects(ignore=(self, self.magnet))
-		print(self.position + self.origin)
+		print(self.position)
 		self.particles.set_position(self.position - self.origin/2)
 		# self.particles.set_position(self.position)
 		# print(self.particles.position)

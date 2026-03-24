@@ -22,3 +22,4 @@ SHAKING		= False
 
 # Game status
 GAME_OVER	= False
+CURR_EFFECT = None

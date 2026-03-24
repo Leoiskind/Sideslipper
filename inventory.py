@@ -127,7 +127,8 @@ class Inventory(Entity):
     
     def consume_mouth_items_anim(self):
         self.eat_anim.play_animation('eat')
-        invoke(self.consume_mouth_items, delay=2)
+        invoke(self.shop_reference.hide_shop, delay=2)
+        invoke(self.consume_mouth_items, delay=2.1)
 
     def consume_mouth_items(self):
         mouth_items = [c for c in list(self.item_parent.children) if c.y == -3 and 0 <= c.x <= 2]
@@ -138,8 +139,8 @@ class Inventory(Entity):
                 self.use_item_callback(c.item_name)
             destroy(c)
             
-        if hasattr(self, 'shop_reference') and self.shop_reference is not None:
-            self.shop_reference.hide_shop()
+        # if hasattr(self, 'shop_reference') and self.shop_reference is not None:
+        #     self.shop_reference.hide_shop()
 
     def update(self):
         main_items = [c for c in self.item_parent.children if c.y >= -1]

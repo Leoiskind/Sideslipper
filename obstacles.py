@@ -1,4 +1,4 @@
-from ursina import Entity, color, time, destroy, Vec3
+from ursina import Entity, color, time, destroy, Vec3, SpriteSheetAnimation
 from config import LENGTH, CORRIDOR_HEIGHT
 import flags
 
@@ -87,22 +87,38 @@ class MiddleObstacle(Obstacle):
 		self.color = color.orange
 
 class StoreObstacle(Obstacle):
-	def __init__(self, wall, scale=(CORRIDOR_HEIGHT/4, CORRIDOR_HEIGHT/4), is_obstacle=False, **kwargs):
-		super().__init__(scale, is_obstacle, **kwargs)
+	def __init__(self, wall, scale=(CORRIDOR_HEIGHT/3, CORRIDOR_HEIGHT/3), is_obstacle=False, **kwargs):
+		super().__init__(scale, is_obstacle, texture='store', **kwargs)
+
 		distance = CORRIDOR_HEIGHT/2-.25
 		match wall:
 			case 0:
-				self.rotation = (0, 0, 0)
+				self.rotation = (0, 0, 180)
 				self.y = distance
 			case 1:
-				self.rotation = (0, 0, 90)
+				self.rotation = (0, 0, -90)
 				self.x = distance
 			case 2:
-				self.rotation = (0, 0, 270)
+				self.rotation = (0, 0, 90)
 				self.x = -distance
 			case 3:
-				self.rotation = (0, 0, 180)
+				self.rotation = (0, 0, 0)
 				self.y = -distance
-		self.color = color.green
+		self.color = color.white
+		# self.animation_thing.play_animation('run')
 
-obstacle_list = [LowObstacle, HighObstacle, WallObstacle, MiddleObstacle]
+N = 25
+n = 10
+
+obstacle_list = []
+
+LowObstacleList = [LowObstacle]*N
+obstacle_list += LowObstacleList
+LowObstacleList = [HighObstacle]*N
+obstacle_list += LowObstacleList
+LowObstacleList = [WallObstacle]*N
+obstacle_list += LowObstacleList
+LowObstacleList = [MiddleObstacle]*N
+obstacle_list += LowObstacleList
+obstacle_list += [StoreObstacle]*n
+

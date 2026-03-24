@@ -146,11 +146,15 @@ class Shop(Entity):
 
 	def hide_shop(self):
 		global DEFAULT_SCROLL_SPEED, CAM_BASE_POS, CAM_BASE_ROT
-		application.paused = False
+		self.player.z = -10
+		# flags.CURR_EFFECT.clear_effect()
 		flags.STORE = False
 		flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED
 		flags.INVENTORY = False
 		self.shop_anim.enabled = False
+		camera.position = CAM_BASE_POS
+		camera.rotation = CAM_BASE_ROT
+		flags.CURR_EFFECT.apply_effect()
 		self.enabled = False
  
 		

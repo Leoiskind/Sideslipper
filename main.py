@@ -168,6 +168,8 @@ effect_D = EffectWall(block_left, release_left)
 
 effects = [effect_B, effect_A, effect_C, effect_D]
 
+flags.CURR_EFFECT = effect_A
+
 # -----------------
 # Input & update
 # -----------------
@@ -305,6 +307,7 @@ def update():
 
 		if flags.CURRENT_WALL != last_wall:
 			effects[last_wall].clear_effect()
+			flags.CURR_EFFECT = effects[flags.CURRENT_WALL]
 			effects[flags.CURRENT_WALL].apply_effect()
 			last_wall = flags.CURRENT_WALL
 			shop_was_open = False
@@ -365,26 +368,10 @@ if __name__ == '__main__':
 	def add_item():
 		inventory.append(random.choice(items))
 
-	add_item_button = Button(
-		scale = (.1,.1),
-		x=-.5,
-		color=color.lime.tint(-.25),
-		text='+',
-		tooltip=Tooltip('Add random item'),
-		on_click=add_item
-	)
 	player = bean
 	player.coins = 0
 
-	show_inventory_button = Button(
-		scale=(0.15, 0.05),
-		position=(-0.75, 0),
-		color=color.azure,
-		text='Show Inventory',
-		on_click=inventory.show_inventory
-	)
-
-	inventory.append('hash_brown')
+	inventory.append('chocolate')
 
 	# 2. Create the physical UI Text element on the screen
 	coin_counter_ui = Text(text='Coins: 0', position=(-0.85, 0.45), scale=2, color=color.gold)
@@ -429,17 +416,6 @@ if __name__ == '__main__':
 	Text(parent=pause_screen, text='PAUSED', origin=(0, 0), position=(0, 0), scale=5, color=color.white)
 	Text(parent=pause_screen, text='Press P to Resume', origin=(0, 0), position=(0, -0.15), scale=1.5, color=color.gray)
 
-	# --- 4. OPEN SHOP BUTTON ---
-	# Uses Sequence to simultaneously open the shop AND pause the game!
-	open_shop_btn = Button(
-		scale=(0.15, 0.05),
-		position=(-0.75, 0.3),
-		color=color.azure,
-		text='Open Shop',
-		on_click=item_shop.show_shop
-		# on_click=Sequence(Func(item_shop.show_shop), Func(setattr, application, 'paused', True)) 
-	)
-
 
 	start_screen = Entity(parent=camera.ui, z=-2)
 
@@ -478,6 +454,5 @@ if __name__ == '__main__':
 	start_button.animate_y(0, duration=1.5, curve=curve.out_bounce)
 	start_button.on_mouse_enter = lambda: button_anim.play_animation('hover')
 	start_button.on_mouse_exit = lambda: button_anim.play_animation('idle')
-	StoreObstacle(z=-50, parent=rotation_pivot, wall =1)
 
 	app.run()

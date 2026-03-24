@@ -65,6 +65,7 @@ def increase_speed(bean, factor):
 	for i in range(n_steps):
 		invoke(change_speed, flags.SCROLL_SPEED + i*factor/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*SPEED_CHANGE)
 	bean.animate_z(bean.z + 1, duration=SPEED_CHANGE, curve=curve.linear)
+	print("Done increasing the speed")
 
 def decrease_speed(bean, factor):
 	print("Reduced speed")
@@ -73,6 +74,7 @@ def decrease_speed(bean, factor):
 	for i in range(n_steps):
 		invoke(change_speed, flags.SCROLL_SPEED - i*factor/n_steps*DEFAULT_SCROLL_SPEED, delay=i/n_steps*SPEED_CHANGE)
 	bean.animate_z(bean.z - 1, duration=SPEED_CHANGE, curve=curve.linear)
+	print("Done reducing the speed")
 
 def block_right():
 	flags.CAN_RIGHT = False
