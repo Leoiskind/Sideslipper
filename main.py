@@ -55,21 +55,12 @@ sides = create_sides(SEG_COUNT)
 # -----------------
 bean = Character(
 	model='sphere',
-	scale=(0.7*BEAN_HEIGHT, BEAN_HEIGHT, 0.9*BEAN_HEIGHT),
+	scale=(BEAN_WIDTH, BEAN_HEIGHT, BEAN_DEPTH),
 	position=Vec3(0, 0, -10),
 	bean_color=color.clear,
 	origin=ORIGIN,
 	on_shop_callback=to_shop
 	)
-
-# -----------------
-# Obstacles
-# -----------------
-# Test_Lower = LowObstacle(z=-30, parent=rotation_pivot)
-# Test_Higher = HighObstacle(z=-40, parent=rotation_pivot)
-# Test_Wall = WallObstacle(z=-50, parent=rotation_pivot)
-# Middle_obstacle = MiddleObstacle(z=-60, parent=rotation_pivot)
-# Test_Shop = StoreObstacle(z=-80, parent=rotation_pivot)
 
 # -----------------
 # Rotation hierarchy
@@ -82,7 +73,7 @@ for side in sides:
 
 camera.shader = fisheye_shader
 camera.set_shader_input('strength', 0.1)
-camera.set_shader_input('pixel_size', 256)
+camera.set_shader_input('pixel_size', PIXEL_SIZE)
 camera.origin = ORIGIN
 camera.position = CAM_BASE_POS
 camera.rotation = CAM_BASE_ROT
@@ -93,12 +84,11 @@ def get_last_z(sides_list):
 	return min(side.z for side in sides_list)
 
 # --- GAME STATE & SCORE VARIABLES ---
-GAME_OVER = False
 SCORE = 0
 
 def trigger_death():
-	global GAME_OVER, SPEED
-	if GAME_OVER: return # Prevent dying twice!
+	global SPEED
+	if flags.GAME_OVER: return # Prevent dying twice!
 	if effect_manager.effect_uses['pablo'] > 0:
 		print("PABLO PROTECTS YOU FROM DEATH!")
 		effect_manager.effect_uses['pablo'] -= 1
@@ -107,11 +97,14 @@ def trigger_death():
 		return
 	effects[flags.CURRENT_WALL].clear_effect()
 	bean.enabled = False
+	bean.particles.enabled = True
+	bean.particles.play(.3, curve.linear)
 	for shadow in bean.shadows:
 		shadow.enabled = False
+	flags.SCROLL_SPEED = 0
 	print("Player died!")
-	GAME_OVER = True
-	flags.CURRENT_WALL = 0
+	print(flags.SCROLL_SPEED)
+	flags.GAME_OVER = True
 	
 	# Update and show the death screen
 	invoke(show_death_screen, delay=1.0)  # delay in seconds
@@ -123,10 +116,10 @@ def show_death_screen():
 bean.on_death_callback = trigger_death
 
 def restart_game():
-	global GAME_OVER, SCORE, DEFAULT_SCROLL_SPEED, effects
+	global SCORE, DEFAULT_SCROLL_SPEED, effects, last_wall
 	
 	print("Restarting game...")
-	GAME_OVER = False
+	flags.GAME_OVER = False
 	SCORE = 0
 	flags.SCROLL_SPEED = DEFAULT_SCROLL_SPEED  # Reset to your base starting speed
 	
@@ -139,6 +132,8 @@ def restart_game():
 	
 	# Reset the corridor rotation back to the floor
 	rotation_pivot.rotation_z = 0
+	flags.CURRENT_WALL = 0
+	last_wall = 0
 	
 	# Hide the death screen so the player can see again
 	for entity in scene.entities:
@@ -154,7 +149,7 @@ def restart_game():
 
 def toggle_pause():
 	# Don't allow pausing if the player is already dead!
-	if GAME_OVER: 
+	if flags.GAME_OVER: 
 		return 
 
 	# Flip the built-in Ursina pause state
@@ -168,7 +163,7 @@ def toggle_pause():
 effect_A = EffectWall(increase_speed, decrease_speed, bean, 2)
 effect_B = EffectWall(set_nausea, clear_nausea, camera, .3)
 effect_C = EffectWall(flip_camera, return_camera, camera)
-effect_D = EffectWall(block_right, release_right)
+effect_D = EffectWall(block_left, release_left)
 
 effects = [effect_B, effect_A, effect_C, effect_D]
 
@@ -186,6 +181,7 @@ def input(key):
 
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		flags.ROTATING = False
+
 	if bean.y == 0:
 		flags.JUMPING = False
 	if bean.scale_y == BEAN_HEIGHT:
@@ -263,11 +259,8 @@ def update():
 	global last_wall, shop_was_open
 	"""Move segments forward to simulate the player running. Recycle segments when they pass the bean."""
 	global SPEED, LENGTH, SIDES_Z_0, JUMPING, SPEED, SCORE, scroll_phase, nausea_time
-	
-	# LIGHT.look_at(bean)
-	# TEXT.text = str(LIGHT.position)
 
-	if not flags.STORE and not GAME_OVER:
+	if not flags.STORE and not flags.GAME_OVER:
 		bean.enabled = True
 
 	if flags.MAGNET_ACTIVE:
@@ -276,13 +269,13 @@ def update():
 		bean.magnet.enabled = False
 
 	update_camera_shake(camera)
-	if GAME_OVER:
+	if flags.GAME_OVER:
 		return
 	
 	generator.update()
   
 	SCORE += time.dt * 20 * flags.SCROLL_SPEED * score_multiplier
-	score_ui.text = f'Score: {int(SCORE)}'
+	score_ui.text = f'Score START: {int(SCORE)}'
 
 	# Update nausea if neded
 	nausea_time += time.dt
@@ -294,9 +287,6 @@ def update():
 
 	for side in sides:
 		side.texture_offset = (0, -scroll_phase % 1)
-	
-	# if flags.SCROLL_SPEED != 0:
-	# 	coin_spawner(player=bean, coin_counter_ui=coin_counter_ui, parent=rotation_pivot)
 
 	if not flags.INVENTORY:
 		inventory.hide_inventory()

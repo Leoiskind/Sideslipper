@@ -18,3 +18,6 @@ APPLE_MODE = False
 
 # Camera
 SHAKING		= False
+
+# Game status
+GAME_OVER	= False

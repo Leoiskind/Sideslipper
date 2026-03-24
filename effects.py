@@ -111,7 +111,7 @@ class EffectsManager:
             'apple': 5
         }
         self.effect_uses = {
-            'pablo': 4
+            'pablo': 0
         }
 
         self.pablo_ui = EffectUseUI('pablo', self)
@@ -156,7 +156,7 @@ class EffectsManager:
             self.extra_time += 2
             def reset_fries():
                 self.extra_time -= 2
-            invoke(reset_fries, delay=self.effect_time['fries'] + self.extra_time)
+            invoke(reset_fries, delay=3)
         elif item_name == 'apple':
             EffectTimer('apple', self.effect_time['apple'] + self.extra_time)
             self.lose_effects_callback()  # Clear all current effects immediately

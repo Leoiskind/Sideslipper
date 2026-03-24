@@ -17,11 +17,13 @@ SPEED_CHANGE= 0.1	# How long it takes for the speed to change
 # Player (bean) config
 # -----------------
 BEAN_HEIGHT = 0.5	# Size of the character
+BEAN_WIDTH	= 0.5*0.7
+BEAN_DEPTH	= 0.3
 ORIGIN		= Vec3(0, 1.5/BEAN_HEIGHT - 0.5, 0)  # origin point for bean
 JUMPING		= False
 CURVE_JUMP_UP= curve.out_quad  # easing curve for bean "jump" when switching attachment
 CURVE_JUMP_DOWN=curve.in_quad   # easing curve for bean "fall" when switching attachment
-GRAPHICS_SCALE = 2  # scale for the player graphics (running animation)
+GRAPHICS_SCALE = 1.5  # scale for the player graphics (running animation)
 ROLL_TIME	= .5
 CURVE_ROLL_DOWN= curve.linear
 CURVE_ROLL_UP= curve.linear
@@ -35,6 +37,7 @@ STORE		= False
 DEFAULT_STRENGTH_SHADER= .1
 CAM_BASE_POS= Vec3(.7, 0, -5)
 CAM_BASE_ROT= Vec3(7, 190, 0)
+PIXEL_SIZE	= 400
 
 # -----------------
 # Main config
