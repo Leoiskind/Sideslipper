@@ -15,10 +15,7 @@ INVENTORY_FULL = False
 INVINCIBLE = False
 MAGNET_ACTIVE = False
 APPLE_MODE = False
-<<<<<<< HEAD
 MAIN_MENU = True
-=======
 
 # Camera
 SHAKING		= False
->>>>>>> e0a77d7e99bbf9f8ca93cd512eb50fb601a4d483

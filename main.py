@@ -170,11 +170,8 @@ def input(key):
 	global camera_base_pos, camera_base_rot
 	print(key)
 	global ROTATING, JUMPING
-<<<<<<< HEAD
-=======
 	if key=='p':
 		toggle_pause()
->>>>>>> e0a77d7e99bbf9f8ca93cd512eb50fb601a4d483
 
 	if rotation_pivot.rotation_z % 90 == 0 and bean.y == 0:
 		flags.ROTATING = False
