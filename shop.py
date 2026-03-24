@@ -16,10 +16,11 @@ class Shop(Entity):
 			enabled=False          # Start with the shop hidden
 		)
 		self.catalog={}
+		self.inventory = inventory
+		self.inventory.shop_reference=self
 
 		# The shop needs to know about the player (for coins) and inventory (to store items)
 		self.player = player
-		self.inventory = inventory
 		self.coin_counter_ui = coin_counter_ui
 		self.item_container=Entity(parent=self, enabled=True)
 		# A dictionary of what you are selling and how much it costs
