@@ -187,33 +187,35 @@ def input(key):
 		flags.JUMPING = False
 	if bean.scale_y == BEAN_HEIGHT:
 		flags.ROLLING = False
-	if held_keys['d'] and not flags.ROTATING and not flags.JUMPING:
-		if flags.CAN_RIGHT:
-			flags.ROTATING = True
-			bean.jump()
-			rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
-		else:
-			start_camera_shake(strength=0.02)
-	if held_keys['a'] and not flags.ROTATING and not flags.JUMPING:
-		if flags.CAN_LEFT:
-			flags.ROTATING = True
-			rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
-			bean.jump()
-		else:
-			start_camera_shake(strength=0.02)
-	if held_keys['space'] and not flags.ROTATING and not flags.JUMPING:
-		if flags.CAN_JUMP:
-			flags.JUMPING = True
-			bean.jump()
-		else:
-			flags.JUMPING = True
-			bean.jump(height=.03, duration=.1)
-	if held_keys['shift'] and not flags.ROLLING:
-		if flags.CAN_ROLL:
-			flags.ROLLING = True
-			bean.roll()
-		else:
-			print("Can't roll")
+
+	if not flags.MAIN_MENU:
+		if held_keys['d'] and not flags.ROTATING and not flags.JUMPING:
+			if flags.CAN_RIGHT:
+				flags.ROTATING = True
+				bean.jump()
+				rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z - 90, duration=TURN_TIME, curve=CURVE)
+			else:
+				start_camera_shake(strength=0.02)
+		if held_keys['a'] and not flags.ROTATING and not flags.JUMPING:
+			if flags.CAN_LEFT:
+				flags.ROTATING = True
+				rotation_pivot.animate_rotation_z(rotation_pivot.rotation_z + 90, duration=TURN_TIME, curve=CURVE)
+				bean.jump()
+			else:
+				start_camera_shake(strength=0.02)
+		if held_keys['space'] and not flags.ROTATING and not flags.JUMPING:
+			if flags.CAN_JUMP:
+				flags.JUMPING = True
+				bean.jump()
+			else:
+				flags.JUMPING = True
+				bean.jump(height=.03, duration=.1)
+		if held_keys['shift'] and not flags.ROLLING:
+			if flags.CAN_ROLL:
+				flags.ROLLING = True
+				bean.roll()
+			else:
+				print("Can't roll")
 		
 	if key == 'w' or key == 'up arrow':
 		pass

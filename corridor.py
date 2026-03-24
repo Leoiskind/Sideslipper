@@ -5,11 +5,11 @@ import flags
 from camera import nausea_shader, fisheye_shader, camera_base_pos, camera_base_rot
 
 class CorridorSegment(Entity):
-	def __init__(self, z_pos, rotation, color=color.gray, parent=None, effect=None):
-		super().__init__()
+	def __init__(self, z_pos, rotation, color=color.gray, parent=None, effect=None, **kargs):
+		super().__init__(**kargs)
 		self.z = SIDES_Z_0 + z_pos
 		self.model = 'cube'
-		self.texture = 'brick'
+		# self.texture = 'brick'
 		self.color = color
 		self.shader = lit_with_shadows_shader
 		self.scale = (WIDTH, HEIGHT, LENGTH)
@@ -18,10 +18,10 @@ class CorridorSegment(Entity):
 		self.shadow = True
 
 def create_sides(n_segments):
-	sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.gray) for i in range(n_segments)]
-	sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.red) for i in range(n_segments)]
-	sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.yellow) for i in range(n_segments)]
-	sides_D = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 180), color=color.orange) for i in range(n_segments)]
+	sides_A = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 0), color=color.white, texture='nausea_side.png') for i in range(n_segments)]
+	sides_B = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 90), color=color.white, texture='no_right_side.png') for i in range(n_segments)]
+	sides_C = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, -90), color=color.white, texture='speed_side.png') for i in range(n_segments)]
+	sides_D = [CorridorSegment(z_pos = -i * LENGTH, rotation=Vec3(0, 0, 180), color=color.white, texture='camera_flip.png') for i in range(n_segments)]
 
 	return sides_A + sides_B + sides_C + sides_D
 
@@ -51,6 +51,9 @@ class EffectWall():
 		self.clear(*self.args)
 
 # Possible effects
+
+# class SpeedUP(EffectWall):
+# 	def __init__(self, **kargs)
 
 def change_speed(speed):
 	flags.SCROLL_SPEED = speed
