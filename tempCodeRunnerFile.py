@@ -1,1 +1,1 @@
-print
+camera_base_pos
