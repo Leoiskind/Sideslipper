@@ -16,3 +16,6 @@ INVINCIBLE = False
 MAGNET_ACTIVE = False
 APPLE_MODE = False
 MAIN_MENU = True
+
+# Camera
+SHAKING		= False
