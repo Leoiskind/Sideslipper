@@ -1,8 +1,7 @@
 from ursina import Entity, color, Vec3, invoke, curve
 from ursina.shaders import lit_with_shadows_shader
-from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SPEED_CHANGE, DEFAULT_SCROLL_SPEED, CAM_BASE_ROT
+from config import WIDTH, HEIGHT, LENGTH, CORRIDOR_HEIGHT, SIDES_Z_0, ORIGIN_SIDES, SPEED_CHANGE, DEFAULT_SCROLL_SPEED, CAM_BASE_ROT, TURN_TIME, PIXEL_SIZE
 import flags
-import camera
 from camera import nausea_shader, fisheye_shader, camera_base_pos, camera_base_rot
 
 class CorridorSegment(Entity):
@@ -57,6 +56,7 @@ def change_speed(speed):
 	flags.SCROLL_SPEED = speed
 
 def increase_speed(bean, factor):
+	print("Increased speed")
 	global SPEED_CHANGE, DEFAULT_SCROLL_SPEED
 	n_steps = 10
 	for i in range(n_steps):
@@ -64,6 +64,7 @@ def increase_speed(bean, factor):
 	bean.animate_z(bean.z + 1, duration=SPEED_CHANGE, curve=curve.linear)
 
 def decrease_speed(bean, factor):
+	print("Reduced speed")
 	global SPEED_CHANGE, DEFAULT_SCROLL_SPEED
 	n_steps = 10
 	for i in range(n_steps):
@@ -89,14 +90,10 @@ def release_jump():
 	flags.CAN_JUMP = True
 
 def flip_camera(camera):
-	global camera_base_rot
-	print(CAM_BASE_ROT)
-	camera.camera_base_rot = CAM_BASE_ROT + Vec3(0, 0, 180)
-	print(camera.camera_base_rot)
+	camera.animate_rotation(camera.rotation + Vec3(0, 0, 180), duration=TURN_TIME/3)
 
 def return_camera(camera):
-	global camera_base_rot
-	camera.camera_base_rot = CAM_BASE_ROT
+    camera.rotation = CAM_BASE_ROT
 
 nausea_time = 0
 
@@ -105,9 +102,9 @@ def set_nausea(camera, factor):
 	camera.shader = nausea_shader
 	camera.set_shader_input('strength', factor)
 	camera.set_shader_input('time', nausea_time)
-	camera.set_shader_input('pixel_size', 256)
+	camera.set_shader_input('pixel_size', PIXEL_SIZE)
 
 def clear_nausea(camera, factor):
 	camera.shader = fisheye_shader
 	camera.set_shader_input('strength', 0.1)
-	camera.set_shader_input('pixel_size', 256)
+	camera.set_shader_input('pixel_size', PIXEL_SIZE)

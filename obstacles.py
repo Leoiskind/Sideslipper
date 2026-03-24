@@ -18,7 +18,7 @@ class Obstacle(Entity):
 	def update(self):
 		hit = self.intersects()
 		global LENGTH
-		self.z += flags.SCROLL_SPEED * LENGTH * time.dt
+		if not flags.GAME_OVER: self.z += flags.SCROLL_SPEED * LENGTH * time.dt
 		if self.z > 5:
 			destroy(self)
 

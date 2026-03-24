@@ -19,3 +19,6 @@ MAIN_MENU = True
 
 # Camera
 SHAKING		= False
+
+# Game status
+GAME_OVER	= False
