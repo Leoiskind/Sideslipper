@@ -1,2 +1,2 @@
 # game_jam_game
-We are so cooked
+Python Game created for UoM Game jam 2026
