@@ -111,7 +111,7 @@ class EffectsManager:
             'apple': 5
         }
         self.effect_uses = {
-            'pablo': 4
+            'pablo': 0
         }
 
         self.pablo_ui = EffectUseUI('pablo', self)

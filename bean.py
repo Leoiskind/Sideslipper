@@ -1,4 +1,4 @@
-from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, Audio, scene
+from ursina import Entity, Vec3, color, time, destroy, random, Mesh, copy, floor, curve, Audio, scene, held_keys
 from ursina.shaders import lit_with_shadows_shader
 from config import BEAN_HEIGHT, CORRIDOR_HEIGHT, TURN_TIME, CURVE_JUMP_UP, CURVE_JUMP_DOWN, GRAPHICS_SCALE, ROLL_TIME, CURVE_ROLL_DOWN, CURVE_ROLL_UP, SHADOW_ALPHA
 import flags
@@ -91,14 +91,15 @@ class Character(Entity):
 			rotation=(0, 180, 0),
 			scale=(GRAPHICS_SCALE, GRAPHICS_SCALE),
 			parent=self,
-			y=-2.5
+			y=-2.6
 		)
 		self.particles = Particles(
-			Vec3(0, -1.5, 0),
+			Vec3(0, 0, -10),
 			self.scale[1],
 			particle_size=0.1,
-			debug_position=True,
-			parent=self
+			particle_number=100,
+			debug_position=False,
+			parent=scene
 			)
 		self.magnet = Entity(
 			parent=scene,
@@ -158,6 +159,8 @@ class Character(Entity):
 
 	def update(self):
 		hit = self.intersects(ignore=(self, self.magnet))
+		print(self.position + self.origin)
+		self.particles.set_position(self.position - self.origin/2)
 		# self.particles.set_position(self.position)
 		# print(self.particles.position)
 
